@@ -8716,6 +8716,10 @@ export interface Locale extends ILocale {
          * 今日誕生日のユーザー
          */
         "birthdayFollowings": string;
+        /**
+         * ListenBrainz
+         */
+        "listenBrainz": string;
     };
     "_cw": {
         /**
@@ -8924,6 +8928,10 @@ export interface Locale extends ILocale {
          * 自己紹介
          */
         "description": string;
+        /**
+         * ListenBrainz
+         */
+        "listenbrainz": string;
         /**
          * ハッシュタグを含めることができます。
          */
