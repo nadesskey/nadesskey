@@ -9,6 +9,10 @@
 ### Server
 -->
 
+## Unlereased
+### Server
+- セミパブリック投稿で投票を作れない問題の修正
+
 ## nade 1.7.0
 - misskey 2024.11.1-alpha.0 (2025/01/06 08:35 JST時点でのdevelop、79b851fe562c3e6be601b5b25a744d86798d4747)に追従
 - https://github.com/misskey-dev/misskey/pull/15233
