@@ -261,7 +261,11 @@ export class SearchService {
 			.leftJoinAndSelect('reply.user', 'replyUser')
 			.leftJoinAndSelect('renote.user', 'renoteUser');
 
-		query.andWhere('(coalesce(note.cw, \'\') || note.text) &@~ :q', { q: q.replaceAll('　', ' ') });
+		if (this.pgroongaTarget === 'cw_and_text' ) {
+			query.andWhere('(coalesce(note.cw, \'\') || note.text) &@~ :q', { q: q.replaceAll('　', ' ') });
+		} else {
+			query.andWhere('note.text &@~ :q', { q: q.replaceAll('　', ' ') });
+		}
 
 		if (opts.host) {
 			if (opts.host === '.') {
