@@ -9,7 +9,14 @@
 ### Server
 -->
 
+## unlereased
+### Client 
+- Enhance: listenbrainzウィジェットをMFM表示に対応
+
 ## nade 1.8.0
+### Client
+- Feature: listenbrainzウィジェットの追加
+
 ### Server
 - 1.7.2の暫定対応をRevert
 - cw_and_textのきちんとした対応を先行導入
