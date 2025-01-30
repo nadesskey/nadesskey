@@ -9,6 +9,11 @@
 ### Server
 -->
 
+## nade 1.8.0
+### Server
+- 1.7.2の暫定対応をRevert
+- cw_and_textのきちんとした対応を先行導入
+
 ## nade 1.7.2
 ### Server
 - cw_textのマルチ検索のため、暫定的に一部の変更を削除
@@ -17,6 +22,7 @@
 ### Server
 - セミパブリック投稿で投票を作れない問題の修正
 - pgroongaでand/or検索とcw_textのマルチ検索に対応
+  (https://github.com/misskey-dev/misskey/pull/15315)
 
 ## nade 1.7.0
 - misskey 2024.11.1-alpha.0 (2025/01/06 08:35 JST時点でのdevelop、79b851fe562c3e6be601b5b25a744d86798d4747)に追従
