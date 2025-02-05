@@ -1,20 +1,23 @@
-## Unreleased
-
-### Note
-- 新しい設定項目"pgroonga.target"が追加されました.
-	- すでにnoteのtextのみのindexを貼っていてそのまま利用したい場合、設定は不要です.
-	- cwとtextのマルチカラムに対応する場合、**"pgroonga.target"を"cw_and_text"**に設定する必要があります.
-  - index	に関する詳細は #14730 を、configに関しては`.config/example.yml` または `.config/docker_example.yml`の'pgroonga'の節を参照願います
-
+## 2025.2.0
 
 ### General
+- Fix: Docker のビルドに失敗する問題を修正  
+  (Cherry-picked from https://activitypub.software/TransFem-org/Sharkey/-/merge_requests/883)
 
 ### Client
--
+- Fix: パスキーでパスワードレスログインが出来ない問題を修正
+- Fix: 一部環境でセンシティブなファイルを含むノートの非表示が効かない問題 
+- Fix: データセーバー有効時にもユーザーページの「ファイル」タブで画像が読み込まれてしまう問題を修正
+- Fix: MFMの `sparkle` エフェクトが正しく表示されない問題を修正
+- Fix: ページのURLにスラッシュが含まれている場合にページが正しく表示されない問題を修正
+- Fix: デッキのプロファイルが新規作成できない問題を修正
+- Fix: セキュリティに関する修正
+- ローカライゼーションの更新
+- Playが実装されたため、ページ機能の「ソースを見る」は削除されました
 
 ### Server
-- Enhance: pgroongaを用いた検索でcwと本文を合わせて, またAND検索、OR検索が可能になります
-
+- Enhance: ページのURLに使用可能な文字を限定するように
+- Fix: 個別お知らせページのmetaタグ出力の条件が間違っていたのを修正
 
 ## 2025.1.0
 
