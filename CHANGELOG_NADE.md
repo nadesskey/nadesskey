@@ -13,6 +13,9 @@
 ### Client 
 - Enhance: listenbrainzウィジェットをMFM表示に対応
 
+### Server
+- Fix: GTLにてTL条件が壊れている問題の修正
+
 ## nade 1.8.0
 ### Client
 - Feature: listenbrainzウィジェットの追加
