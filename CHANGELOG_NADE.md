@@ -9,7 +9,7 @@
 ### Server
 -->
 
-## unlereased
+## nade 1.8.1
 ### Client 
 - Enhance: listenbrainzウィジェットをMFM表示に対応
 
