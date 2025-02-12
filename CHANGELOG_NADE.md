@@ -9,9 +9,14 @@
 ### Server
 -->
 
-## unlereased
+## nade 1.8.1
 ### Client 
 - Enhance: listenbrainzウィジェットをMFM表示に対応
+
+### Server
+- Fix: GTLにてTL条件が壊れている問題の修正
+- Fix: ノート通知が重複することがある問題の修正
+- Fix: セミパブリック投稿がノート通知の対象でない問題の修正
 
 ## nade 1.8.0
 ### Client

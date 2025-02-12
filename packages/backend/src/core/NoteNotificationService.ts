@@ -62,10 +62,10 @@ export class NoteNotificationService implements OnApplicationShutdown {
 
 	@bindThis
 	public async sendNotificationToSubscriber(note: MiNote, noteUser: { id: MiUser['id']; username: string; host: string | null; }): Promise<void> {
-		if (!['public', 'home'].includes(note.visibility)) return;
+		if (!['public', 'public_non_ltl', 'home'].includes(note.visibility)) return;
 
 		const targetUsers = await this.getTargetUsers();
-		const matchedTargets = Array.from(targetUsers.filter(x => x.targetUserId === noteUser.id));
+		const matchedTargets = Array.from(new Set(targetUsers.filter(x => x.targetUserId === noteUser.id)));
 
 		matchedTargets.forEach(x => {
 			this.notificationService.createNotification(x.userId, 'note', {
