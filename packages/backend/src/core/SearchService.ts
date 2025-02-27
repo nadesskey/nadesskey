@@ -79,7 +79,7 @@ export class SearchService {
 	private readonly meilisearchIndexScope: 'local' | 'global' | string[] = 'local';
 	private readonly meilisearchNoteIndex: Index | null = null;
 	private readonly provider: FulltextSearchProvider;
-	private readonly pgroongaTarget : 'text' | 'cw_and_text' = 'text';
+	private readonly pgroongaTarget: 'text' | 'cw_and_text' = 'text';
 
 	constructor(
 		@Inject(DI.config)
