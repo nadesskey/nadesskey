@@ -9,6 +9,15 @@
 ### Server
 -->
 
+## Unlereased
+### General
+
+### Client
+- Fix: セミパブリック投稿を削除して編集した際に公開範囲が引き継がれない問題
+
+
+### Server
+
 ## nade 1.8.1
 ### Client 
 - Enhance: listenbrainzウィジェットをMFM表示に対応
