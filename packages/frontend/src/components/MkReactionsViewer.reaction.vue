@@ -37,7 +37,7 @@ import { customEmojisMap } from '@/custom-emojis.js';
 import { prefer } from '@/preferences.js';
 import { DI } from '@/di.js';
 
-const reactionChecksMuting = computed(defaultStore.makeGetterSetter('reactionChecksMuting'));
+const reactionChecksMuting = prefer.model('reactionChecksMuting');
 
 const props = defineProps<{
 	reaction: string;
