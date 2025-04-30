@@ -1345,9 +1345,6 @@ importers:
       esbuild:
         specifier: 0.25.3
         version: 0.25.3
-      eslint:
-        specifier: 9.25.1
-        version: 9.25.1
       execa:
         specifier: 8.0.1
         version: 8.0.1
