@@ -374,7 +374,7 @@ export class WebhookTestService {
 			replyId: note.replyId,
 			renoteId: note.renoteId,
 			isHidden: false,
-			visibility: note.visibility,
+			visibility: note.visibility === 'public_non_ltl' ? 'public' : note.visibility,
 			mentions: note.mentions,
 			visibleUserIds: note.visibleUserIds,
 			fileIds: note.fileIds,
@@ -394,6 +394,7 @@ export class WebhookTestService {
 			uri: note.uri ?? undefined,
 			url: note.url ?? undefined,
 			reactionAndUserPairCache: note.reactionAndUserPairCache,
+			dontShowOnLtl: note.visibility === 'public_non_ltl',
 			...(detail ? {
 				clippedCount: note.clippedCount,
 				reply: note.reply ? await this.toPackedNote(note.reply, false) : null,
