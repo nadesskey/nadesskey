@@ -41,7 +41,7 @@ import { ref, computed } from 'vue';
 import type { Paging } from '@/components/MkPagination.vue';
 import MkPagination from '@/components/MkPagination.vue';
 import { i18n } from '@/i18n';
-import { definePageMetadata } from '@/scripts/page-metadata';
+import { definePage } from '@/page.js';
 import MkUserCardMini from '@/components/MkUserCardMini.vue';
 import * as os from '@/os';
 
@@ -74,7 +74,7 @@ const headerActions = computed(() => []);
 
 const headerTabs = computed(() => []);
 
-definePageMetadata({
+definePage({
 	title: i18n.ts.notifications,
 	icon: 'ti ti-bell',
 });
