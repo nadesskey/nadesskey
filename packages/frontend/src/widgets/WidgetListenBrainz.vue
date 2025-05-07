@@ -15,7 +15,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 	<div :class="$style.root">
 		<MkLoading v-if="fetching"/>
 		<div v-else-if="!playingNow" style="text-align: center;">
-			<MkResult type="empty" text="i18n.ts.nothing"/>
+			<MkResult type="empty" :text="i18n.ts.nothing"/>
 		</div>
 		<div v-else class="_gaps_s" style="display: flex; flex-direction: column; justify-content: center; align-items: center;">
 			<MkMfm :text="formattedNote"/>
