@@ -15,8 +15,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 	<div :class="$style.root">
 		<MkLoading v-if="fetching"/>
 		<div v-else-if="!playingNow" style="text-align: center;">
-			<img :src="infoImageUrl" :class="$style.ghostImage"/>
-			<div>{{ i18n.ts.nothing }}</div>
+			<MkResult type="empty" text="i18n.ts.nothing"/>
 		</div>
 		<div v-else class="_gaps_s" style="display: flex; flex-direction: column; justify-content: center; align-items: center;">
 			<MkMfm :text="formattedNote"/>
@@ -28,8 +27,9 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 <script lang="ts" setup>
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
-import { useWidgetPropsManager, WidgetComponentEmits, WidgetComponentExpose, WidgetComponentProps } from './widget.js';
-import { GetFormResultType } from '@/utility/form.js';
+import { useWidgetPropsManager } from './widget.js';
+import type { WidgetComponentEmits, WidgetComponentExpose, WidgetComponentProps } from './widget.js';
+import type { GetFormResultType } from '@/utility/form.js';
 import MkContainer from '@/components/MkContainer.vue';
 import MkButton from '@/components/MkButton.vue';
 import MkLoading from '@/components/global/MkLoading.vue';
