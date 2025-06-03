@@ -56,10 +56,11 @@ SPDX-License-Identifier: AGPL-3.0-only
 </template>
 
 <script lang="ts" setup>
-import { computed, watch, onUnmounted, provide, useTemplateRef, TransitionGroup, onMounted, shallowRef, ref } from 'vue';
+import { computed, watch, onUnmounted, provide, useTemplateRef, TransitionGroup, reactive } from 'vue';
 import * as Misskey from 'misskey-js';
 import { useInterval } from '@@/js/use-interval.js';
 import { getScrollContainer, scrollToTop } from '@@/js/scroll.js';
+import type { Reactive } from 'vue';
 import type { BasicTimelineType } from '@/timelines.js';
 import type { PagingCtx } from '@/composables/use-pagination.js';
 import { usePagination } from '@/composables/use-pagination.js';
@@ -71,9 +72,8 @@ import { instance } from '@/instance.js';
 import { prefer } from '@/preferences.js';
 import { store } from '@/store.js';
 import MkNote from '@/components/MkNote.vue';
-import MkButton from '@/components/MkButton.vue';
 import { i18n } from '@/i18n.js';
-import { globalEvents, useGlobalEvent } from '@/events.js';
+import { useGlobalEvent } from '@/events.js';
 import { isSeparatorNeeded, getSeparatorInfo } from '@/utility/timeline-date-separate.js';
 
 const props = withDefaults(defineProps<{
@@ -201,7 +201,11 @@ function prepend(note: Misskey.entities.Note) {
 
 let connection: Misskey.ChannelConnection | null = null;
 let connection2: Misskey.ChannelConnection | null = null;
-let paginationQuery: PagingCtx;
+let paginationQuery: Reactive<PagingCtx> = reactive<PagingCtx>({
+	endpoint: 'notes/timeline',
+	limit: 10,
+	params: {} as TimelineQueryType,
+});
 
 const stream = store.s.realtimeMode ? useStream() : null;
 
@@ -339,11 +343,10 @@ function updatePaginationQuery() {
 		throw new Error('Unrecognized timeline type: ' + props.src);
 	}
 
-	paginationQuery = {
-		endpoint: endpoint,
-		limit: 10,
-		params: query,
-	};
+	// リアクティブを保持するため、パラメータごとに定義
+	paginationQuery.endpoint = endpoint;
+	paginationQuery.limit = 10;
+	paginationQuery.params = query ?? {};
 }
 
 function refreshEndpointAndChannel() {
