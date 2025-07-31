@@ -13,6 +13,7 @@ import type { ComponentProps as CP } from 'vue-component-type-helpers';
 import type { Form, GetFormResultType } from '@/utility/form.js';
 import type { MenuItem } from '@/types/menu.js';
 import type { PostFormProps } from '@/types/post-form.js';
+import type { UploaderFeatures } from '@/composables/use-uploader.js';
 import type MkRoleSelectDialog_TypeReferenceOnly from '@/components/MkRoleSelectDialog.vue';
 import type MkEmojiPickerDialog_TypeReferenceOnly from '@/components/MkEmojiPickerDialog.vue';
 import { misskeyApi } from '@/utility/misskey-api.js';
@@ -836,6 +837,7 @@ export function launchUploader(
 	options?: {
 		folderId?: string | null;
 		multiple?: boolean;
+		features?: UploaderFeatures;
 	},
 ): Promise<Misskey.entities.DriveFile[]> {
 	return new Promise(async (res, rej) => {
@@ -844,6 +846,7 @@ export function launchUploader(
 			files: markRaw(files),
 			folderId: options?.folderId,
 			multiple: options?.multiple,
+			features: options?.features,
 		}, {
 			done: driveFiles => {
 				if (driveFiles.length === 0) return rej();

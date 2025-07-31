@@ -5,7 +5,7 @@
 
 <template>
 <div class="_gaps_m">
-	<MkPagination :pagination="noteNotificationPagination">
+	<MkPagination :paginator="paginator">
 		<template #empty>
 			<div class="_fullinfo">
 				<img src="https://xn--931a.moe/assets/info.jpg" class="_ghost"/>
@@ -37,18 +37,17 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, computed } from 'vue';
-import type { Paging } from '@/components/MkPagination.vue';
+import { ref, computed, markRaw } from 'vue';
+import { Paginator } from '@/utility/paginator.js';
 import MkPagination from '@/components/MkPagination.vue';
 import { i18n } from '@/i18n';
 import { definePage } from '@/page.js';
 import MkUserCardMini from '@/components/MkUserCardMini.vue';
 import * as os from '@/os';
 
-const noteNotificationPagination:Paging = {
-	endpoint: 'note-notification/list' as const,
+const paginator = markRaw(new Paginator('note-notification/list', {
 	limit: 10,
-};
+}));
 
 let expandedNoteNotificationItems = ref([]);
 
