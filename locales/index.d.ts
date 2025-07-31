@@ -5247,7 +5247,7 @@ export interface Locale extends ILocale {
      */
     "prohibitedWordsForNameOfUser": string;
     /**
-     * このリストに含まれる文字列がユーザーの名前に含まれる場合、ユーザーの名前の変更を拒否します。モデレーター権限を持つユーザーはこの制限の影響を受けません。
+     * このリストに含まれる文字列がユーザーの名前に含まれる場合、ユーザーの名前の変更を拒否します。モデレーター権限を持つユーザーはこの制限の影響を受けません。ユーザー名(username)に対しても全て小文字に置き換えて検査します。
      */
     "prohibitedWordsForNameOfUserDescription": string;
     /**
@@ -5286,6 +5286,10 @@ export interface Locale extends ILocale {
      * このサーバーは連合が無効化されています。他のサーバーのユーザーとやり取りすることはできません。
      */
     "federationDisabled": string;
+    /**
+     * 下書き
+     */
+    "draft": string;
     /**
      * リアクションする際に確認する
      */
@@ -5497,6 +5501,24 @@ export interface Locale extends ILocale {
      * 全ての「ヒントとコツ」を非表示
      */
     "hideAllTips": string;
+    /**
+     * デフォルトの画像圧縮度
+     */
+    "defaultImageCompressionLevel": string;
+    /**
+     * 低くすると画質を保てますが、ファイルサイズは増加します。<br>高くするとファイルサイズを減らせますが、画質は低下します。
+     */
+    "defaultImageCompressionLevel_description": string;
+    "_order": {
+        /**
+         * 新しい順
+         */
+        "newest": string;
+        /**
+         * 古い順
+         */
+        "oldest": string;
+    };
     "_chat": {
         /**
          * まだメッセージはありません
@@ -5837,6 +5859,10 @@ export interface Locale extends ILocale {
          * URLプレビューを表示する
          */
         "showUrlPreview": string;
+        /**
+         * 利用できるリアクションを先頭に表示
+         */
+        "showAvailableReactionsFirstInNote": string;
         "_chat": {
             /**
              * 送信者の名前を表示
@@ -7789,6 +7815,14 @@ export interface Locale extends ILocale {
              * ファイルによっては種別を判定できないことがあります。そのようなファイルを許可する場合は {x} を指定に追加してください。
              */
             "uploadableFileTypes_caption2": ParameterizedString<"x">;
+            /**
+             * サーバーサイドのノートの下書きの作成可能数
+             */
+            "noteDraftLimit": string;
+            /**
+             * ウォーターマーク機能の使用可否
+             */
+            "watermarkAvailable": string;
         };
         "_condition": {
             /**
@@ -8378,6 +8412,10 @@ export interface Locale extends ILocale {
          * テーマコード
          */
         "code": string;
+        /**
+         * テーマコードをコピー
+         */
+        "copyThemeCode": string;
         /**
          * 説明
          */
@@ -9608,6 +9646,14 @@ export interface Locale extends ILocale {
         "disableFederationDescription": string;
     };
     "_postForm": {
+        /**
+         * アップロードされていないファイルがありますが、破棄してフォームを閉じますか？
+         */
+        "quitInspiteOfThereAreUnuploadedFilesConfirm": string;
+        /**
+         * ファイルはまだアップロードされていません。ファイルのメニューから、リネームや画像のクロップ、ウォーターマークの付与、圧縮の有無などを設定できます。ファイルはノート投稿時に自動でアップロードされます。
+         */
+        "uploaderTip": string;
         /**
          * このノートに返信...
          */
@@ -10889,6 +10935,10 @@ export interface Locale extends ILocale {
          */
         "attachedNotes": string;
         /**
+         * 利用
+         */
+        "usage": string;
+        /**
          * このページは、このファイルをアップロードしたユーザーしか閲覧できません。
          */
         "thisPageCanBeSeenFromTheAuthor": string;
@@ -12000,6 +12050,10 @@ export interface Locale extends ILocale {
     };
     "_uploader": {
         /**
+         * 画像の編集
+         */
+        "editImage": string;
+        /**
          * {x}に圧縮
          */
         "compressedToX": ParameterizedString<"x">;
@@ -12069,6 +12123,254 @@ export interface Locale extends ILocale {
          * 任意のユーザーが含まれるリストを作成できます。作成したリストはタイムラインとして表示可能です。
          */
         "tip": string;
+    };
+    /**
+     * ウォーターマーク
+     */
+    "watermark": string;
+    /**
+     * デフォルトのプリセット
+     */
+    "defaultPreset": string;
+    "_watermarkEditor": {
+        /**
+         * 画像にクレジット情報などのウォーターマークを追加することができます。
+         */
+        "tip": string;
+        /**
+         * 保存せずに終了しますか？
+         */
+        "quitWithoutSaveConfirm": string;
+        /**
+         * このファイルは対応していません
+         */
+        "driveFileTypeWarn": string;
+        /**
+         * 画像ファイルを選択してください
+         */
+        "driveFileTypeWarnDescription": string;
+        /**
+         * ウォーターマークの編集
+         */
+        "title": string;
+        /**
+         * 全体に被せる
+         */
+        "cover": string;
+        /**
+         * 敷き詰める
+         */
+        "repeat": string;
+        /**
+         * 不透明度
+         */
+        "opacity": string;
+        /**
+         * サイズ
+         */
+        "scale": string;
+        /**
+         * テキスト
+         */
+        "text": string;
+        /**
+         * 位置
+         */
+        "position": string;
+        /**
+         * タイプ
+         */
+        "type": string;
+        /**
+         * 画像
+         */
+        "image": string;
+        /**
+         * 高度
+         */
+        "advanced": string;
+        /**
+         * ストライプ
+         */
+        "stripe": string;
+        /**
+         * ラインの幅
+         */
+        "stripeWidth": string;
+        /**
+         * ラインの数
+         */
+        "stripeFrequency": string;
+        /**
+         * 角度
+         */
+        "angle": string;
+        /**
+         * ポルカドット
+         */
+        "polkadot": string;
+        /**
+         * チェッカー
+         */
+        "checker": string;
+        /**
+         * メインドットの不透明度
+         */
+        "polkadotMainDotOpacity": string;
+        /**
+         * メインドットの大きさ
+         */
+        "polkadotMainDotRadius": string;
+        /**
+         * サブドットの不透明度
+         */
+        "polkadotSubDotOpacity": string;
+        /**
+         * サブドットの大きさ
+         */
+        "polkadotSubDotRadius": string;
+        /**
+         * サブドットの数
+         */
+        "polkadotSubDotDivisions": string;
+    };
+    "_imageEffector": {
+        /**
+         * エフェクト
+         */
+        "title": string;
+        /**
+         * エフェクトを追加
+         */
+        "addEffect": string;
+        /**
+         * 変更を破棄して終了しますか？
+         */
+        "discardChangesConfirm": string;
+        "_fxs": {
+            /**
+             * 色収差
+             */
+            "chromaticAberration": string;
+            /**
+             * グリッチ
+             */
+            "glitch": string;
+            /**
+             * ミラー
+             */
+            "mirror": string;
+            /**
+             * 色の反転
+             */
+            "invert": string;
+            /**
+             * 白黒
+             */
+            "grayscale": string;
+            /**
+             * 色調補正
+             */
+            "colorAdjust": string;
+            /**
+             * 色の圧縮
+             */
+            "colorClamp": string;
+            /**
+             * 色の圧縮(高度)
+             */
+            "colorClampAdvanced": string;
+            /**
+             * 歪み
+             */
+            "distort": string;
+            /**
+             * 二値化
+             */
+            "threshold": string;
+            /**
+             * 集中線
+             */
+            "zoomLines": string;
+            /**
+             * ストライプ
+             */
+            "stripe": string;
+            /**
+             * ポルカドット
+             */
+            "polkadot": string;
+            /**
+             * チェッカー
+             */
+            "checker": string;
+            /**
+             * ブロックノイズ
+             */
+            "blockNoise": string;
+            /**
+             * ティアリング
+             */
+            "tearing": string;
+        };
+    };
+    /**
+     * 下書き
+     */
+    "drafts": string;
+    "_drafts": {
+        /**
+         * 下書きを選択
+         */
+        "select": string;
+        /**
+         * 下書きの作成可能数を超えています。
+         */
+        "cannotCreateDraftAnymore": string;
+        /**
+         * この内容では下書きを作成できません。
+         */
+        "cannotCreateDraft": string;
+        /**
+         * 下書きを削除
+         */
+        "delete": string;
+        /**
+         * 下書きを削除しますか？
+         */
+        "deleteAreYouSure": string;
+        /**
+         * 下書きはありません
+         */
+        "noDrafts": string;
+        /**
+         * {user}への返信
+         */
+        "replyTo": ParameterizedString<"user">;
+        /**
+         * {user}のノートへの引用
+         */
+        "quoteOf": ParameterizedString<"user">;
+        /**
+         * {channel}への投稿
+         */
+        "postTo": ParameterizedString<"channel">;
+        /**
+         * 下書きへ保存
+         */
+        "saveToDraft": string;
+        /**
+         * 下書きから復元
+         */
+        "restoreFromDraft": string;
+        /**
+         * 復元
+         */
+        "restore": string;
+        /**
+         * 下書き一覧
+         */
+        "listDrafts": string;
     };
 }
 declare const locales: {
