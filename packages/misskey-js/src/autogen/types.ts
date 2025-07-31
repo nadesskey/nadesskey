@@ -4435,7 +4435,7 @@ export type components = {
             /** @description The renote target note contents if exists. If the renote target has been deleted since the draft was created, this will be null while renoteId is not null. */
             renote?: components['schemas']['Note'] | null;
             /** @enum {string} */
-            visibility: 'public' | 'home' | 'followers' | 'specified';
+            visibility: 'public' | 'home' | 'followers' | 'specified' | 'public_non_ltl';
             visibleUserIds?: string[];
             fileIds?: string[];
             files?: components['schemas']['DriveFile'][];
@@ -29272,7 +29272,7 @@ export interface operations {
                      * @default public
                      * @enum {string}
                      */
-                    visibility?: 'public' | 'home' | 'followers' | 'specified';
+                    visibility?: 'public' | 'home' | 'followers' | 'specified' | 'public_non_ltl';
                     visibleUserIds?: string[];
                     cw?: string | null;
                     hashtag?: string | null;
@@ -29513,7 +29513,7 @@ export interface operations {
                      * @default public
                      * @enum {string}
                      */
-                    visibility?: 'public' | 'home' | 'followers' | 'specified';
+                    visibility?: 'public' | 'home' | 'followers' | 'specified' | 'public_non_ltl';
                     visibleUserIds?: string[];
                     cw?: string | null;
                     hashtag?: string | null;
