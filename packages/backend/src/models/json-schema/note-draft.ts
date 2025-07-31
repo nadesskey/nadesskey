@@ -62,7 +62,7 @@ export const packedNoteDraftSchema = {
 		visibility: {
 			type: 'string',
 			optional: false, nullable: false,
-			enum: ['public', 'home', 'followers', 'specified'],
+			enum: ['public', 'home', 'followers', 'specified', 'public_non_ltl'],
 		},
 		visibleUserIds: {
 			type: 'array',
