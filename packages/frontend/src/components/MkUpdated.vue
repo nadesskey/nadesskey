@@ -4,10 +4,11 @@ SPDX-License-Identifier: AGPL-3.0-only
 -->
 
 <template>
-<MkModal ref="modal" :zPriority="'middle'" @click="modal?.close()" @closed="$emit('closed')">
+<MkModal ref="modal" preferType="dialog" :zPriority="'middle'" @click="modal?.close()" @closed="$emit('closed')">
 	<div :class="$style.root">
 		<div :class="$style.title"><MkSparkle>{{ i18n.ts.misskeyUpdated }}</MkSparkle></div>
 		<div :class="$style.version">✨{{ version }}🚀</div>
+		<div v-if="isBeta" :class="$style.beta">{{ i18n.ts.thankYouForTestingBeta }}</div>
 		<div :class="$style.buttons">
 			<MkButton full @click="whatIsNew">{{ i18n.ts.whatIsNew }}</MkButton>
 			<MkButton full @click="whatIsNewNadesskey">{{ i18n.ts.whatIsNew }}(Nadesskey)</MkButton>
@@ -28,6 +29,8 @@ import { i18n } from '@/i18n.js';
 import { confetti } from '@/utility/confetti.js';
 
 const modal = useTemplateRef('modal');
+
+const isBeta = version.includes('-beta') || version.includes('-alpha') || version.includes('-rc');
 
 function whatIsNew() {
 	modal.value?.close();
@@ -64,6 +67,10 @@ onMounted(() => {
 }
 
 .version {
+	margin: 1em 0;
+}
+
+.beta {
 	margin: 1em 0;
 }
 
