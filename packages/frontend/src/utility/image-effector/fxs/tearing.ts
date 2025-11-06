@@ -4,54 +4,27 @@
  */
 
 import seedrandom from 'seedrandom';
+import shader from './tearing.glsl';
 import { defineImageEffectorFx } from '../ImageEffector.js';
 import { i18n } from '@/i18n.js';
 
-const shader = `#version 300 es
-precision mediump float;
-
-in vec2 in_uv;
-uniform sampler2D in_texture;
-uniform vec2 in_resolution;
-uniform int u_amount;
-uniform float u_shiftStrengths[128];
-uniform float u_shiftOrigins[128];
-uniform float u_shiftHeights[128];
-uniform float u_channelShift;
-out vec4 out_color;
-
-void main() {
-	float v = 0.0;
-
-	for (int i = 0; i < u_amount; i++) {
-		if (in_uv.y > (u_shiftOrigins[i] - u_shiftHeights[i]) && in_uv.y < (u_shiftOrigins[i] + u_shiftHeights[i])) {
-			v += u_shiftStrengths[i];
-		}
-	}
-
-	float r = texture(in_texture, vec2(in_uv.x + (v * (1.0 + u_channelShift)), in_uv.y)).r;
-	float g = texture(in_texture, vec2(in_uv.x + v, in_uv.y)).g;
-	float b = texture(in_texture, vec2(in_uv.x + (v * (1.0 + (u_channelShift / 2.0))), in_uv.y)).b;
-	float a = texture(in_texture, vec2(in_uv.x + v, in_uv.y)).a;
-	out_color = vec4(r, g, b, a);
-}
-`;
-
 export const FX_tearing = defineImageEffectorFx({
-	id: 'tearing' as const,
+	id: 'tearing',
 	name: i18n.ts._imageEffector._fxs.glitch + ': ' + i18n.ts._imageEffector._fxs.tearing,
 	shader,
 	uniforms: ['amount', 'channelShift'] as const,
 	params: {
 		amount: {
-			type: 'number' as const,
+			label: i18n.ts._imageEffector._fxProps.amount,
+			type: 'number',
 			default: 3,
 			min: 1,
 			max: 100,
 			step: 1,
 		},
 		strength: {
-			type: 'number' as const,
+			label: i18n.ts._imageEffector._fxProps.strength,
+			type: 'number',
 			default: 0.05,
 			min: -1,
 			max: 1,
@@ -59,7 +32,8 @@ export const FX_tearing = defineImageEffectorFx({
 			toViewValue: v => Math.round(v * 100) + '%',
 		},
 		size: {
-			type: 'number' as const,
+			label: i18n.ts._imageEffector._fxProps.size,
+			type: 'number',
 			default: 0.2,
 			min: 0,
 			max: 1,
@@ -67,7 +41,8 @@ export const FX_tearing = defineImageEffectorFx({
 			toViewValue: v => Math.round(v * 100) + '%',
 		},
 		channelShift: {
-			type: 'number' as const,
+			label: i18n.ts._imageEffector._fxProps.glitchChannelShift,
+			type: 'number',
 			default: 0.5,
 			min: 0,
 			max: 10,
@@ -75,7 +50,8 @@ export const FX_tearing = defineImageEffectorFx({
 			toViewValue: v => Math.round(v * 100) + '%',
 		},
 		seed: {
-			type: 'seed' as const,
+			label: i18n.ts._imageEffector._fxProps.seed,
+			type: 'seed',
 			default: 100,
 		},
 	},
