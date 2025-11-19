@@ -233,6 +233,15 @@ const headerActions = computed(() => {
 				});
 			}
 
+			if (isBasicTimeline(src.value) && hasLocalOnly(src.value)) {
+				menuItems.push({
+					type: 'switch',
+					icon: 'ti ti-planet',
+					text: i18n.ts.localOnly,
+					ref: onlyLocal,
+				});
+			}
+
 			menuItems.push({
 				type: 'switch',
 				icon: 'ti ti-eye-exclamation',
@@ -251,15 +260,6 @@ const headerActions = computed(() => {
 				text: i18n.ts.showFixedPostForm,
 				ref: showFixedPostForm,
 			});
-
-			if (isBasicTimeline(src.value) && hasLocalOnly(src.value)) {
-				menuItems.push({
-					type: 'switch',
-					icon: 'ti ti-planet',
-					text: i18n.ts.localOnly,
-					ref: onlyLocal,
-				});
-			}
 
 			os.popupMenu(menuItems, ev.currentTarget ?? ev.target);
 		},
