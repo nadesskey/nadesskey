@@ -38,6 +38,7 @@
 
 <script lang="ts" setup>
 import { ref, computed, markRaw } from 'vue';
+import type { Ref } from 'vue';
 import { Paginator } from '@/utility/paginator.js';
 import MkPagination from '@/components/MkPagination.vue';
 import { i18n } from '@/i18n';
@@ -49,7 +50,7 @@ const paginator = markRaw(new Paginator('note-notification/list', {
 	limit: 10,
 }));
 
-let expandedNoteNotificationItems = ref([]);
+let expandedNoteNotificationItems:Ref<string[]> = ref([]);
 
 async function noteUnsubscribe(userId, ev) {
 	os.popupMenu([{

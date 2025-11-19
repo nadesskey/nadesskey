@@ -30,6 +30,7 @@ import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
 import { useWidgetPropsManager } from './widget.js';
 import type { WidgetComponentEmits, WidgetComponentExpose, WidgetComponentProps } from './widget.js';
 import type { GetFormResultType } from '@/utility/form.js';
+import type { noteVisibilities } from 'misskey-js';
 import MkContainer from '@/components/MkContainer.vue';
 import MkButton from '@/components/MkButton.vue';
 import MkLoading from '@/components/global/MkLoading.vue';
@@ -37,6 +38,8 @@ import { i18n } from '@/i18n.js';
 import { misskeyApi } from '@/utility/misskey-api.js';
 import { $i } from '@/i.js';
 import MkMfm from '@/components/global/MkMfm.js';
+
+type NoteVisibilities = typeof noteVisibilities[number];
 
 const name = i18n.ts._widgets.listenBrainz;
 
@@ -58,12 +61,12 @@ const widgetPropsDef = {
 		type: 'enum' as const,
 		default: 'home' as const,
 		enum: [
-			{ label: 'Public', value: 'public' },
+			{ label: 'Public', value: 'public' as NoteVisibilities },
 			...( $i?.policies.canPublicNonLtlNote ? [{
-				label: 'Semi-Public', value: 'public_non_ltl',
+				label: 'Semi-Public', value: 'public_non_ltl' as NoteVisibilities,
 			}] : []),
-			{ label: 'Home', value: 'home' },
-			{ label: 'Followers', value: 'followers' },
+			{ label: 'Home', value: 'home' as NoteVisibilities },
+			{ label: 'Followers', value: 'followers' as NoteVisibilities },
 		],
 	},
 	refreshIntervalSec: {
@@ -82,7 +85,7 @@ const { widgetProps, configure, save } = useWidgetPropsManager(name, widgetProps
 const playingNow = ref(false);
 const trackMetadata = ref<any>(null);
 const fetching = ref(true);
-let intervalId: ReturnType<typeof window.setTimeout> | null = null;
+let intervalId: ReturnType<typeof Window.prototype.setInterval> | null = null;
 
 const formattedNote = computed(() => {
 	if (!trackMetadata.value) return '';
