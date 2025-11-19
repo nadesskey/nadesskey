@@ -71,6 +71,7 @@ const exampleNote = reactive<Misskey.entities.Note>({
 	files: [],
 	replyId: null,
 	renoteId: null,
+	dontShowOnLtl: false,
 });
 const onceReacted = ref<boolean>(false);
 
