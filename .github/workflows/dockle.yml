@@ -34,7 +34,7 @@ jobs:
 
       - name: Prune docker junk (optional but recommended)
         run: |
-          docker system prune -af
+          docker image prune -f
           docker volume prune -f
 
       - name: Save image for Dockle
