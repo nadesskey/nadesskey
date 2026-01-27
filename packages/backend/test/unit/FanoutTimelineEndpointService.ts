@@ -143,4 +143,64 @@ describe('FanoutTimelineEndpointService', () => {
 		expect(untilId).toBe(htlNote3.id);
 		expect(untilId > ltlNote1.id).toBe(true);
 	});
+
+	test('should maintain correct pagination cursor when using sinceId (ascending)', async () => {
+		const now = Date.now();
+		// Ascending: Oldest to Newest.
+		const note1 = await createNote({ id: idService.gen(now - 3000) });
+		const note2 = await createNote({ id: idService.gen(now - 2000) });
+		const note3 = await createNote({ id: idService.gen(now - 1000) });
+
+		const ids = [note1.id, note2.id, note3.id];
+
+		fanoutTimelineService.getMulti.mockResolvedValue([ids]);
+
+		const dbFallback = jest.fn();
+
+		const ps = {
+			redisTimelines: [`homeTimeline:${alice.id}`] as FanoutTimelineName[],
+			useDbFallback: false, // Disable fallback to check Redis filtering logic directly
+			limit: 2,
+			allowPartial: true,
+			excludePureRenotes: false,
+			dbFallback,
+			untilId: null,
+			sinceId: idService.gen(now - 4000),
+		};
+
+		const result = await service.getMiNotes(ps);
+
+		// With the fix, we should get note1 and note2.
+		// Without the fix, we would get only note3 (or empty if limit blocked it).
+		expect(result).toHaveLength(2);
+		expect(result[0].id).toBe(note1.id);
+		expect(result[1].id).toBe(note2.id);
+	});
+
+	test('should not fallback to DB when useDbFallback is false even if insufficient notes', async () => {
+		const now = Date.now();
+		const note1 = await createNote({ id: idService.gen(now) });
+		const ids = [note1.id];
+
+		fanoutTimelineService.getMulti.mockResolvedValue([ids]);
+
+		const dbFallback = jest.fn((_untilId: string | null, _sinceId: string | null, _limit: number) => Promise.resolve([] as MiNote[]));
+
+		const ps = {
+			redisTimelines: [`homeTimeline:${alice.id}`] as FanoutTimelineName[],
+			useDbFallback: false,
+			limit: 10,
+			allowPartial: false,
+			excludePureRenotes: false,
+			dbFallback,
+			noteFilter: () => false, // Filter out everything
+			untilId: null,
+			sinceId: null,
+		};
+
+		const result = await service.getMiNotes(ps);
+
+		expect(dbFallback).not.toHaveBeenCalled();
+		expect(result).toEqual([]);
+	});
 });
