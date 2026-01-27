@@ -155,7 +155,9 @@ describe('FanoutTimelineEndpointService', () => {
 
 		fanoutTimelineService.getMulti.mockResolvedValue([ids]);
 
-		const dbFallback = jest.fn();
+		// Mock dbFallback to return empty array
+		// eslint-disable-next-line @typescript-eslint/no-unused-vars
+		const dbFallback = jest.fn((untilId: string | null, sinceId: string | null, limit: number) => Promise.resolve([] as MiNote[]));
 
 		const ps = {
 			redisTimelines: [`homeTimeline:${alice.id}`] as FanoutTimelineName[],
