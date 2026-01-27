@@ -92,7 +92,7 @@ export class FanoutTimelineEndpointService {
 
 		// TODO: いい感じにgetMulti内でソート済だからuniqするときにredisResultが全てソート済なのを利用して再ソートを避けたい
 		let redisResultIds = shouldFallbackToDb ? [] : Array.from(new Set(redisResult.flat(1)));
-		if (fttThresholdId != null) {
+		if (ps.useDbFallback && fttThresholdId != null) {
 			redisResultIds = redisResultIds.filter(id => id >= fttThresholdId);
 		}
 		redisResultIds.sort(idCompare);

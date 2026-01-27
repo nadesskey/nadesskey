@@ -205,4 +205,41 @@ describe('FanoutTimelineEndpointService', () => {
 		expect(dbFallback).not.toHaveBeenCalled();
 		expect(result).toEqual([]);
 	});
+
+	test('should merge disjoint timelines correctly when useDbFallback is false', async () => {
+		const now = Date.now();
+		// TL1: Recent
+		const note1 = await createNote({ id: idService.gen(now - 1000) });
+		const note2 = await createNote({ id: idService.gen(now - 2000) });
+		// TL2: Old
+		const note3 = await createNote({ id: idService.gen(now - 5000) });
+		const note4 = await createNote({ id: idService.gen(now - 6000) });
+
+		const ids1 = [note1.id, note2.id];
+		const ids2 = [note3.id, note4.id];
+
+		fanoutTimelineService.getMulti.mockResolvedValue([ids1, ids2]);
+
+		// eslint-disable-next-line @typescript-eslint/no-unused-vars
+		const dbFallback = jest.fn((untilId: string | null, sinceId: string | null, limit: number) => Promise.resolve([] as MiNote[]));
+
+		const ps = {
+			redisTimelines: ['homeTimeline', 'localTimeline'] as FanoutTimelineName[],
+			useDbFallback: false,
+			limit: 10,
+			allowPartial: true,
+			excludePureRenotes: false,
+			dbFallback,
+			noteFilter: () => true, // Accept all
+			untilId: null,
+			sinceId: null,
+		};
+
+		const result = await service.getMiNotes(ps);
+
+		// With the previous logic, note3 and note4 would be filtered out because they are older than the "threshold" (end of TL1).
+		// With the fixed logic (skipping filter when !useDbFallback), all notes should be present.
+		expect(result).toHaveLength(4);
+		expect(result.map(n => n.id)).toEqual([note1.id, note2.id, note3.id, note4.id]);
+	});
 });
