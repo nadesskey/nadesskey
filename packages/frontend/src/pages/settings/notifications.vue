@@ -47,19 +47,16 @@ SPDX-License-Identifier: AGPL-3.0-only
 						<div class="_gaps_s">
 							<div v-for="item in items" :key="item.id" :class="[$style.userItem ]">
 								<div :class="$style.userItemMain">
-									<MkA :class="$style.userItemMainBody" :to="userPage(item.followee!)">
-										<MkUserCardMini :user="item.followee!"/>
+									<MkA :class="$style.userItemMainBody" :to="userPage(item.user)">
+										<MkUserCardMini :user="item.user"/>
 									</MkA>
-									<button class="_button" :class="$style.notifyMenu" @click="showNotifyMenu(item.followee!, $event)"><i class="ti ti-dots"></i></button>
+									<button class="_button" :class="$style.notifyMenu" @click="showNotifyMenu(item.user, $event)"><i class="ti ti-dots"></i></button>
 								</div>
 							</div>
 						</div>
 					</MkPagination>
 				</MkFolder>
 			</SearchMarker>
-		</FormSection>
-		<FormSection>
-			<FormLink to="/settings/notifications/note"><template #icon><i class="ti ti-bell"></i></template>{{ i18n.ts.noteNotification }}</FormLink>
 		</FormSection>
 		<FormSection>
 			<div class="_gaps_m">
@@ -128,10 +125,9 @@ async function showNotifyMenu(user: Misskey.entities.UserDetailed, ev: PointerEv
 	}], ev.currentTarget ?? ev.target);
 }
 
-const notifyUserPaginator = markRaw(new Paginator('following/list', {
+const notifyUserPaginator = markRaw(new Paginator('note-notification/list', {
 	limit: 10,
 	params: {
-		notification: true,
 	},
 }));
 

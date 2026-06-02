@@ -105,10 +105,6 @@ export const ROUTE_DEF = [{
 		name: 'notifications',
 		component: page(() => import('@/pages/settings/notifications.vue')),
 	}, {
-		path: '/notifications/note',
-		name: 'note-notifications',
-		component: page(() => import('@/pages/settings/notifications.note.vue')),
-	}, {
 		path: '/email',
 		name: 'email',
 		component: page(() => import('@/pages/settings/email.vue')),
