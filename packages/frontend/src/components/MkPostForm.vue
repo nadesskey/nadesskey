@@ -694,8 +694,7 @@ if (replyTargetNote.value && replyTargetNote.value.text != null) {
 				: `@${x.username}@${toASCII(otherHost)}`;
 
 		// 自分は除外
-		if ($i.username === x.username && (x.host == null || x.host === host))
-			continue;
+		if ($i.username === x.username && (x.host == null || x.host === host)) continue;
 
 		// 重複は除外
 		if (text.value.includes(`${mention} `)) continue;
@@ -1137,8 +1136,7 @@ function onKeydown(ev: KeyboardEvent) {
 
 	// justEndedComposition.value is for Safari, which keyDown occurs after compositionend.
 	// ev.isComposing is for another browsers.
-	if (ev.key === "Escape" && !justEndedComposition.value && !ev.isComposing)
-		emit("esc");
+	if (ev.key === "Escape" && !justEndedComposition.value && !ev.isComposing) emit("esc");
 }
 
 function onKeyup(ev: KeyboardEvent) {
@@ -1812,8 +1810,7 @@ async function openAccountMenu(ev: PointerEvent) {
 					replyTargetNote.value = draft.reply;
 					reactionAcceptance.value = draft.reactionAcceptance;
 					scheduledAt.value = draft.scheduledAt ?? null;
-					if (draft.channel)
-						targetChannel.value =
+					if (draft.channel) targetChannel.value =
 							draft.channel as unknown as Misskey.entities.Channel;
 
 					visibleUsers.value = [];
@@ -1957,11 +1954,9 @@ onMounted(() => {
 		});
 	}
 
-	if (textareaEl.value)
-		textAutocomplete = new Autocomplete(textareaEl.value, text);
+	if (textareaEl.value) textAutocomplete = new Autocomplete(textareaEl.value, text);
 	if (cwInputEl.value) cwAutocomplete = new Autocomplete(cwInputEl.value, cw);
-	if (hashtagsInputEl.value)
-		hashtagAutocomplete = new Autocomplete(hashtagsInputEl.value, hashtags);
+	if (hashtagsInputEl.value) hashtagAutocomplete = new Autocomplete(hashtagsInputEl.value, hashtags);
 
 	nextTick(() => {
 		// 書きかけの投稿を復元
