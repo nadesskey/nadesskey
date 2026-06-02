@@ -74,7 +74,7 @@ describe('FanoutTimelineEndpointService', () => {
 		app.enableShutdownHooks();
 
 		service = app.get<FanoutTimelineEndpointService>(FanoutTimelineEndpointService);
-		fanoutTimelineService = app.get(FanoutTimelineService) as jest.Mocked<FanoutTimelineService>;
+		fanoutTimelineService = app.get(FanoutTimelineService) as Mocked<FanoutTimelineService>;
 		notesRepository = app.get<NotesRepository>(DI.notesRepository);
 		usersRepository = app.get<UsersRepository>(DI.usersRepository);
 		userProfilesRepository = app.get<UserProfilesRepository>(DI.userProfilesRepository);
@@ -116,7 +116,7 @@ describe('FanoutTimelineEndpointService', () => {
 		fanoutTimelineService.getMulti.mockResolvedValue([htlIds, ltlIds]);
 
 		// dbFallback spy
-		 
+
 		const dbFallback = vi.fn((_untilId: string | null, _sinceId: string | null, _limit: number) => Promise.resolve([] as MiNote[]));
 
 		const ps = {
