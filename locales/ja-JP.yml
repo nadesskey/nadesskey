@@ -2137,7 +2137,7 @@ _role:
     canImportFollowing: "フォローのインポートを許可"
     canImportMuting: "ミュートのインポートを許可"
     canImportUserLists: "リストのインポートを許可"
-    canPublicNonLtlNote: "パブリック投稿（非LTL）の許可"
+    canPublicNonLtlNote: "セミパブリック投稿の許可"
     chatAvailability: "ダイレクトメッセージを許可"
     uploadableFileTypes: "アップロード可能なファイル種別"
     uploadableFileTypes_caption: "MIMEタイプを指定します。改行で区切って複数指定できるほか、アスタリスク(*)でワイルドカード指定できます。(例: image/*)"

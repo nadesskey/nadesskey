@@ -8238,7 +8238,7 @@ export interface Locale extends ILocale {
              */
             "canImportUserLists": string;
             /**
-             * パブリック投稿（非LTL）の許可
+             * セミパブリック投稿の許可
              */
             "canPublicNonLtlNote": string;
             /**

@@ -194,6 +194,7 @@ export const rolePolicies = [
 	'gtlAvailable',
 	'ltlAvailable',
 	'canPublicNote',
+	'canPublicNonLtlNote',
 	'mentionLimit',
 	'canInvite',
 	'inviteLimit',
