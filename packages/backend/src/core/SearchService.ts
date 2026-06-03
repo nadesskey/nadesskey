@@ -232,9 +232,7 @@ export class SearchService {
 		}
 
 		this.queryService.generateVisibilityQuery(query, me);
-		this.queryService.generateBlockedHostQueryForNote(query);
-		if (me) this.queryService.generateMutedUserQueryForNotes(query, me);
-		if (me) this.queryService.generateBlockedUserQueryForNotes(query, me);
+		this.queryService.generateBaseNoteFilteringQuery(query, me);
 
 		return query.limit(pagination.limit).getMany();
 	}
