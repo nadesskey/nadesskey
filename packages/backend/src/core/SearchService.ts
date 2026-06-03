@@ -17,7 +17,7 @@ import { CacheService } from '@/core/CacheService.js';
 import { QueryService } from '@/core/QueryService.js';
 import { IdService } from '@/core/IdService.js';
 import { LoggerService } from '@/core/LoggerService.js';
-import type { Index, MeiliSearch } from 'meilisearch';
+import type { Index, Meilisearch } from 'meilisearch';
 
 type K = string;
 type V = string | number | boolean;
@@ -86,7 +86,7 @@ export class SearchService {
 		private config: Config,
 
 		@Inject(DI.meilisearch)
-		private meilisearch: MeiliSearch | null,
+		private meilisearch: Meilisearch | null,
 
 		@Inject(DI.notesRepository)
 		private notesRepository: NotesRepository,
@@ -190,11 +190,10 @@ export class SearchService {
 			case 'sqlPgroonga':
 				return this.searchNoteByPgroonga(q, me, opts, pagination);
 			case 'meilisearch': {
-				return this.searchNoteByMeiliSearch(q, me, opts, pagination);
+				return this.searchNoteByMeilisearch(q, me, opts, pagination);
 			}
 			default: {
-				// eslint-disable-next-line @typescript-eslint/no-unused-vars
-				const typeCheck: never = this.provider;
+				const _: never = this.provider;
 				return [];
 			}
 		}
@@ -233,9 +232,7 @@ export class SearchService {
 		}
 
 		this.queryService.generateVisibilityQuery(query, me);
-		this.queryService.generateBlockedHostQueryForNote(query);
-		if (me) this.queryService.generateMutedUserQueryForNotes(query, me);
-		if (me) this.queryService.generateBlockedUserQueryForNotes(query, me);
+		this.queryService.generateBaseNoteFilteringQuery(query, me);
 
 		return query.limit(pagination.limit).getMany();
 	}
@@ -283,14 +280,14 @@ export class SearchService {
 	}
 
 	@bindThis
-	private async searchNoteByMeiliSearch(
+	private async searchNoteByMeilisearch(
 		q: string,
 		me: MiUser | null,
 		opts: SearchOpts,
 		pagination: SearchPagination,
 	): Promise<MiNote[]> {
 		if (!this.meilisearch || !this.meilisearchNoteIndex) {
-			throw new Error('MeiliSearch is not available');
+			throw new Error('Meilisearch is not available');
 		}
 
 		const filter: Q = {
