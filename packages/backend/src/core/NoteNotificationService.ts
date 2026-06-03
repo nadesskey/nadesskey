@@ -15,6 +15,8 @@ import { bindThis } from '@/decorators.js';
 import type { GlobalEvents } from '@/core/GlobalEventService.js';
 import type { OnApplicationShutdown } from '@nestjs/common';
 
+import { CacheService } from '@/core/CacheService.js';
+
 @Injectable()
 export class NoteNotificationService implements OnApplicationShutdown {
 	private targetUsersFetched: boolean;
@@ -28,6 +30,7 @@ export class NoteNotificationService implements OnApplicationShutdown {
 		private noteNotificationsRepository: NoteNotificationsRepository,
 
 		private notificationService: NotificationService,
+		private cacheService: CacheService,
 	) {
 		this.targetUsersFetched = false;
 		this.targetUsers = [];
@@ -46,10 +49,17 @@ export class NoteNotificationService implements OnApplicationShutdown {
 
 		if (obj.channel === 'internal') {
 			const { type, body } = obj.message as GlobalEvents['internal']['payload'];
+
+			// Don't update cache if it's not fetched from DB yet.
+			if (!this.targetUsersFetched) return;
+
 			switch (type) {
 				case 'noteNotificationCreated':
-					// TODO: typecheck回避（WIP）、きれいに書く
-					this.targetUsers.push({ ...body, targetUser: body.targetUser as MiUser, user: body.user as MiUser });
+					// Add to cache if not exists
+					if (!this.targetUsers.some(x => x.id === body.id)) {
+						// TODO: typecheck回避（WIP）、きれいに書く
+						this.targetUsers.push({ ...body, targetUser: body.targetUser as MiUser, user: body.user as MiUser });
+					}
 					break;
 				case 'noteNotificationDeleted':
 					this.targetUsers = this.targetUsers.filter(a => a.id !== body.id);
@@ -64,14 +74,25 @@ export class NoteNotificationService implements OnApplicationShutdown {
 	public async sendNotificationToSubscriber(note: MiNote, noteUser: { id: MiUser['id']; username: string; host: string | null; }): Promise<void> {
 		if (!['public', 'public_non_ltl', 'home'].includes(note.visibility)) return;
 
+		// pure renote = renote but not quote
+		const isPureRenote = note.renoteId != null && note.text == null && note.cw == null && note.replyId == null && (note.fileIds == null || note.fileIds.length === 0);
+
 		const targetUsers = await this.getTargetUsers();
 		const matchedTargets = Array.from(new Set(targetUsers.filter(x => x.targetUserId === noteUser.id)));
 
-		matchedTargets.forEach(x => {
-			this.notificationService.createNotification(x.userId, 'note', {
-				noteId: note.id,
-			}, noteUser.id);
-		});
+		for (const target of matchedTargets) {
+			let isRenoteMuted = false;
+			if (isPureRenote) {
+				const userIdsWhoMeMutingRenotes = await this.cacheService.renoteMutingsCache.fetch(target.userId);
+				isRenoteMuted = userIdsWhoMeMutingRenotes.has(noteUser.id);
+			}
+
+			if (!isRenoteMuted) {
+				this.notificationService.createNotification(target.userId, 'note', {
+					noteId: note.id,
+				}, noteUser.id);
+			}
+		}
 	}
 
 	@bindThis

@@ -41,7 +41,7 @@ import MkMfm from '@/components/global/MkMfm.js';
 
 type NoteVisibilities = typeof noteVisibilities[number];
 
-const name = i18n.ts._widgets.listenBrainz;
+const name = i18n.ts._widgets.listenBrainz as 'listenBrainz';
 
 const widgetPropsDef = {
 	showHeader: {
