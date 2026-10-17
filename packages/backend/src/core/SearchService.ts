@@ -230,13 +230,24 @@ export class SearchService {
 
 		if (opts.host) {
 			if (opts.host === '.') {
-				query.andWhere('user.host IS NULL');
+				query.andWhere('note.userHost IS NULL');
 			} else {
-				query.andWhere('user.host = :host', { host: opts.host });
+				query.andWhere('note.userHost = :host', { host: opts.host });
 			}
 		}
 
+		if (opts.rangeStartAt != null) {
+			const date = this.idService.gen(opts.rangeStartAt - 1);
+			query.andWhere('note.id > :rangeStartAt', { rangeStartAt: date });
+		}
+
+		if (opts.rangeEndAt != null) {
+			const date = this.idService.gen(opts.rangeEndAt + 1);
+			query.andWhere('note.id < :rangeEndAt', { rangeEndAt: date });
+		}
+
 		this.queryService.generateVisibilityQuery(query, me);
+		if (me == null) this.queryService.generateUgcVisibilityQueryForVisitor(query);
 		this.queryService.generateBaseNoteFilteringQuery(query, me);
 
 		return query.limit(pagination.limit).getMany();
