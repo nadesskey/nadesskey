@@ -4,369 +4,114 @@ SPDX-License-Identifier: AGPL-3.0-only
 -->
 
 <template>
-	<div
-		:class="[$style.root]"
-		@dragover.stop="onDragover"
-		@dragenter="onDragenter"
-		@dragleave="onDragleave"
-		@drop.stop="onDrop"
-	>
-		<header :class="$style.header">
-			<div :class="$style.headerLeft">
-				<button
-					v-if="!fixed"
-					:class="$style.cancel"
-					class="_button"
-					@click="cancel"
-				>
-					<i class="ti ti-x"></i>
-				</button>
-				<button
-					ref="accountMenuEl"
-					v-click-anime
-					v-tooltip="i18n.ts.account"
-					class="_button"
-					@click="openAccountMenu"
-				>
-					<img
-						:class="$style.avatar"
-						:src="(postAccount ?? $i).avatarUrl"
-						style="border-radius: 100%"
-					/>
-				</button>
-			</div>
-			<div :class="$style.headerRight">
-				<template v-if="!(targetChannel != null && fixed)">
-					<button
-						v-if="targetChannel == null"
-						ref="visibilityButton"
-						v-tooltip="i18n.ts.visibility"
-						:class="['_button', $style.headerRightItem, $style.visibility]"
-						@click="setVisibility"
-					>
-						<span v-if="visibility === 'public'"
-							><i class="ti ti-world"></i
-						></span>
-						<span v-if="visibility === 'public_non_ltl'"
-							><i class="ti ti-broadcast"></i
-						></span>
-						<span v-if="visibility === 'home'"><i class="ti ti-home"></i></span>
-						<span v-if="visibility === 'followers'"
-							><i class="ti ti-lock"></i
-						></span>
-						<span v-if="visibility === 'specified'"
-							><i class="ti ti-mail"></i
-						></span>
-						<span :class="$style.headerRightButtonText">{{
-							i18n.ts._visibility[visibility]
-						}}</span>
-					</button>
-					<button
-						v-else
-						class="_button"
-						:class="[$style.headerRightItem, $style.visibility]"
-						disabled
-					>
-						<span><i class="ti ti-device-tv"></i></span>
-						<span :class="$style.headerRightButtonText">{{
-							targetChannel.name
-						}}</span>
-					</button>
-				</template>
-				<button
-					v-if="visibility !== 'specified'"
-					v-tooltip="i18n.ts._visibility.disableFederation"
-					class="_button"
-					:class="[$style.headerRightItem, { [$style.danger]: localOnly }]"
-					:disabled="targetChannel != null"
-					@click="toggleLocalOnly"
-				>
-					<span v-if="!localOnly"><i class="ti ti-rocket"></i></span>
-					<span v-else><i class="ti ti-rocket-off"></i></span>
-				</button>
-				<button
-					ref="otherSettingsButton"
-					v-tooltip="i18n.ts.other"
-					class="_button"
-					:class="$style.headerRightItem"
-					@click="showOtherSettings"
-				>
-					<i class="ti ti-dots"></i>
-				</button>
-				<button
-					ref="submitButtonEl"
-					v-click-anime
-					class="_button"
-					:class="$style.submit"
-					:disabled="!canPost"
-					data-cy-open-post-form-submit
-					@click="post"
-				>
-					<div :class="$style.submitInner">
-						<template v-if="posted"></template>
-						<template v-else-if="posting"><MkEllipsis /></template>
-						<template v-else>{{ submitText }}</template>
-						<i style="margin-left: 6px" :class="submitIcon"></i>
-					</div>
-				</button>
-			</div>
-		</header>
-		<MkNoteSimple
-			v-if="replyTargetNote"
-			:class="$style.targetNote"
-			:note="replyTargetNote"
-		/>
-		<MkNoteSimple
-			v-if="renoteTargetNote"
-			:class="$style.targetNote"
-			:note="renoteTargetNote"
-		/>
-		<div v-if="quoteId" :class="$style.withQuote">
-			<i class="ti ti-quote"></i> {{ i18n.ts.quoteAttached
-			}}<button
-				@click="
-					quoteId = null;
-					renoteTargetNote = null;
-				"
-			>
-				<i class="ti ti-x"></i>
+<div
+	:class="[$style.root]"
+	@dragover.stop="onDragover"
+	@dragenter="onDragenter"
+	@dragleave="onDragleave"
+	@drop.stop="onDrop"
+>
+	<header :class="$style.header">
+		<div :class="$style.headerLeft">
+			<button v-if="!fixed" :class="$style.cancel" class="_button" @click="cancel"><i class="ti ti-x"></i></button>
+			<button ref="accountMenuEl" v-click-anime v-tooltip="i18n.ts.account" class="_button" @click="openAccountMenu">
+				<img :class="$style.avatar" :src="(postAccount ?? $i).avatarUrl" style="border-radius: 100%;"/>
 			</button>
 		</div>
-		<div v-if="visibility === 'specified'" :class="$style.toSpecified">
-			<span style="margin-right: 8px">{{ i18n.ts.recipient }}</span>
-			<div :class="$style.visibleUsers">
-				<span v-for="u in visibleUsers" :key="u.id" :class="$style.visibleUser">
-					<MkAcct :user="u" />
-					<button
-						class="_button"
-						style="padding: 4px 8px"
-						@click="removeVisibleUser(u.id)"
-					>
-						<i class="ti ti-x"></i>
-					</button>
-				</span>
-				<button
-					class="_buttonPrimary"
-					style="padding: 4px; border-radius: 8px"
-					@click="addVisibleUser"
-				>
-					<i class="ti ti-plus ti-fw"></i>
+		<div :class="$style.headerRight">
+			<template v-if="!(targetChannel != null && fixed)">
+				<button v-if="targetChannel == null" ref="visibilityButton" v-tooltip="i18n.ts.visibility" :class="['_button', $style.headerRightItem, $style.visibility]" @click="setVisibility">
+					<span v-if="visibility === 'public'"><i class="ti ti-world"></i></span>
+					<span v-if="visibility === 'public_non_ltl'"><i class="ti ti-broadcast"></i></span>
+					<span v-if="visibility === 'home'"><i class="ti ti-home"></i></span>
+					<span v-if="visibility === 'followers'"><i class="ti ti-lock"></i></span>
+					<span v-if="visibility === 'specified'"><i class="ti ti-mail"></i></span>
+					<span :class="$style.headerRightButtonText">{{ i18n.ts._visibility[visibility] }}</span>
 				</button>
-			</div>
-		</div>
-		<MkInfo
-			v-if="!store.r.tips.value.postForm"
-			:class="$style.showHowToUse"
-			closable
-			@close="closeTip('postForm')"
-		>
-			<button class="_textButton" @click="showTour">
-				{{ i18n.ts._postForm.showHowToUse }}
+				<button v-else class="_button" :class="[$style.headerRightItem, $style.visibility]" disabled>
+					<span><i class="ti ti-device-tv"></i></span>
+					<span :class="$style.headerRightButtonText">{{ targetChannel.name }}</span>
+				</button>
+			</template>
+			<button v-if="visibility !== 'specified'" v-tooltip="i18n.ts._visibility.disableFederation" class="_button" :class="[$style.headerRightItem, { [$style.danger]: localOnly }]" :disabled="targetChannel != null" @click="toggleLocalOnly">
+				<span v-if="!localOnly"><i class="ti ti-rocket"></i></span>
+				<span v-else><i class="ti ti-rocket-off"></i></span>
 			</button>
-		</MkInfo>
-		<MkInfo v-if="scheduledAt != null" :class="$style.scheduledAt">
-			<I18n :src="i18n.ts.scheduleToPostOnX" tag="span">
-				<template #x>
-					<MkTime
-						:time="scheduledAt"
-						:mode="'detail'"
-						style="font-weight: bold"
-					/>
-				</template>
-			</I18n>
-			-
-			<button class="_textButton" @click="cancelSchedule()">
-				{{ i18n.ts.cancel }}
+			<button ref="otherSettingsButton" v-tooltip="i18n.ts.other" class="_button" :class="$style.headerRightItem" @click="showOtherSettings"><i class="ti ti-dots"></i></button>
+			<button ref="submitButtonEl" v-click-anime class="_button" :class="$style.submit" :disabled="!canPost" data-testid="post-form-submit" @click="post">
+				<div :class="$style.submitInner">
+					<template v-if="posted"></template>
+					<template v-else-if="posting"><MkEllipsis/></template>
+					<template v-else>{{ submitText }}</template>
+					<i style="margin-left: 6px;" :class="submitIcon"></i>
+				</div>
 			</button>
-		</MkInfo>
-		<MkInfo
-			v-if="hasNotSpecifiedMentions"
-			warn
-			:class="$style.hasNotSpecifiedMentions"
-			>{{ i18n.ts.notSpecifiedMentionWarning }} -
-			<button class="_textButton" @click="addMissingMention()">
-				{{ i18n.ts.add }}
-			</button></MkInfo
-		>
-		<div v-show="useCw" :class="$style.cwOuter">
-			<input
-				ref="cwInputEl"
-				v-model="cw"
-				:class="$style.cw"
-				:placeholder="i18n.ts.annotation"
-				@keydown="onKeydown"
-				@keyup="onKeyup"
-				@compositionend="onCompositionEnd"
-			/>
-			<div
-				v-if="maxCwTextLength - cwTextLength < 20"
-				:class="[
-					'_acrylic',
-					$style.cwTextCount,
-					{ [$style.cwTextOver]: cwTextLength > maxCwTextLength },
-				]"
-			>
-				{{ maxCwTextLength - cwTextLength }}
-			</div>
 		</div>
-		<div :class="[$style.textOuter, { [$style.withCw]: useCw }]">
-			<div
-				v-if="targetChannel"
-				:class="$style.colorBar"
-				:style="{ background: targetChannel.color }"
-			></div>
-			<textarea
-				ref="textareaEl"
-				v-model="text"
-				:class="[$style.text]"
-				:disabled="posting || posted"
-				:readonly="textAreaReadOnly"
-				:placeholder="placeholder"
-				data-cy-post-form-text
-				@keydown="onKeydown"
-				@keyup="onKeyup"
-				@paste="onPaste"
-				@compositionupdate="onCompositionUpdate"
-				@compositionend="onCompositionEnd"
-			></textarea>
-			<div
-				v-if="maxTextLength - textLength < 100"
-				:class="[
-					'_acrylic',
-					$style.textCount,
-					{ [$style.textOver]: textLength > maxTextLength },
-				]"
-			>
-				{{ maxTextLength - textLength }}
-			</div>
+	</header>
+	<MkNoteSimple v-if="replyTargetNote" :class="$style.targetNote" :note="replyTargetNote"/>
+	<MkNoteSimple v-if="renoteTargetNote" :class="$style.targetNote" :note="renoteTargetNote"/>
+	<div v-if="quoteId" :class="$style.withQuote"><i class="ti ti-quote"></i> {{ i18n.ts.quoteAttached }}<button @click="quoteId = null; renoteTargetNote = null;"><i class="ti ti-x"></i></button></div>
+	<div v-if="visibility === 'specified'" :class="$style.toSpecified">
+		<span style="margin-right: 8px;">{{ i18n.ts.recipient }}</span>
+		<div :class="$style.visibleUsers">
+			<span v-for="u in visibleUsers" :key="u.id" :class="$style.visibleUser">
+				<MkAcct :user="u"/>
+				<button class="_button" style="padding: 4px 8px;" @click="removeVisibleUser(u.id)"><i class="ti ti-x"></i></button>
+			</span>
+			<button class="_buttonPrimary" style="padding: 4px; border-radius: 8px;" @click="addVisibleUser"><i class="ti ti-plus ti-fw"></i></button>
 		</div>
-		<input
-			v-show="withHashtags"
-			ref="hashtagsInputEl"
-			v-model="hashtags"
-			:class="$style.hashtags"
-			:placeholder="i18n.ts.hashtags"
-			list="hashtags"
-		/>
-		<XPostFormAttaches
-			v-model="files"
-			@detach="detachFile"
-			@changeSensitive="updateFileSensitive"
-			@changeName="updateFileName"
-		/>
-		<div v-if="uploader.items.value.length > 0" style="padding: 12px">
-			<MkTip k="postFormUploader">
-				{{ i18n.ts._postForm.uploaderTip }}
-			</MkTip>
-			<MkUploaderItems
-				:items="uploader.items.value"
-				@showMenu="(item, ev) => showPerUploadItemMenu(item, ev)"
-				@showMenuViaContextmenu="
-					(item, ev) => showPerUploadItemMenuViaContextmenu(item, ev)
-				"
-			/>
-		</div>
-		<MkPollEditor v-if="poll" v-model="poll" @destroyed="poll = null" />
-		<MkNotePreview
-			v-if="showPreview"
-			:class="$style.preview"
-			:text="text"
-			:files="files"
-			:poll="poll ?? undefined"
-			:useCw="useCw"
-			:cw="cw"
-			:user="postAccount ?? $i"
-		/>
-		<div v-if="showingOptions" style="padding: 8px 16px"></div>
-		<footer ref="footerEl" :class="$style.footer">
-			<div :class="$style.footerLeft">
-				<button
-					v-tooltip="i18n.ts.attachFile + ' (' + i18n.ts.upload + ')'"
-					class="_button"
-					:class="$style.footerButton"
-					@click="chooseFileFromPc"
-				>
-					<i class="ti ti-photo-plus"></i>
-				</button>
-				<button
-					v-tooltip="i18n.ts.attachFile + ' (' + i18n.ts.fromDrive + ')'"
-					class="_button"
-					:class="$style.footerButton"
-					@click="chooseFileFromDrive"
-				>
-					<i class="ti ti-cloud-download"></i>
-				</button>
-				<button
-					v-tooltip="i18n.ts.poll"
-					class="_button"
-					:class="[$style.footerButton, { [$style.footerButtonActive]: poll }]"
-					@click="togglePoll"
-				>
-					<i class="ti ti-chart-arrows"></i>
-				</button>
-				<button
-					v-tooltip="i18n.ts.useCw"
-					class="_button"
-					:class="[$style.footerButton, { [$style.footerButtonActive]: useCw }]"
-					@click="useCw = !useCw"
-				>
-					<i class="ti ti-eye-off"></i>
-				</button>
-				<button
-					v-tooltip="i18n.ts.hashtags"
-					class="_button"
-					:class="[
-						$style.footerButton,
-						{ [$style.footerButtonActive]: withHashtags },
-					]"
-					@click="withHashtags = !withHashtags"
-				>
-					<i class="ti ti-hash"></i>
-				</button>
-				<button
-					v-tooltip="i18n.ts.mention"
-					class="_button"
-					:class="$style.footerButton"
-					@click="insertMention"
-				>
-					<i class="ti ti-at"></i>
-				</button>
-				<button
-					v-if="showAddMfmFunction"
-					v-tooltip="i18n.ts.addMfmFunction"
-					:class="['_button', $style.footerButton]"
-					@click="insertMfmFunction"
-				>
-					<i class="ti ti-palette"></i>
-				</button>
-				<button
-					v-if="postFormActions.length > 0"
-					v-tooltip="i18n.ts.plugins"
-					class="_button"
-					:class="$style.footerButton"
-					@click="showActions"
-				>
-					<i class="ti ti-plug"></i>
-				</button>
-			</div>
-			<div :class="$style.footerRight">
-				<button
-					v-tooltip="i18n.ts.emoji"
-					:class="['_button', $style.footerButton]"
-					@click="insertEmoji"
-				>
-					<i class="ti ti-mood-happy"></i>
-				</button>
-			</div>
-		</footer>
-		<datalist id="hashtags">
-			<option
-				v-for="hashtag in recentHashtags"
-				:key="hashtag"
-				:value="hashtag"
-			></option>
-		</datalist>
 	</div>
+	<MkInfo v-if="!store.r.tips.value.postForm" :class="$style.showHowToUse" closable @close="closeTip('postForm')">
+		<button class="_textButton" @click="showTour">{{ i18n.ts._postForm.showHowToUse }}</button>
+	</MkInfo>
+	<MkInfo v-if="scheduledAt != null" :class="$style.scheduledAt">
+		<I18n :src="i18n.ts.scheduleToPostOnX" tag="span">
+			<template #x>
+				<MkTime :time="scheduledAt" :mode="'detail'" style="font-weight: bold;"/>
+			</template>
+		</I18n> - <button class="_textButton" @click="cancelSchedule()">{{ i18n.ts.cancel }}</button>
+	</MkInfo>
+	<MkInfo v-if="hasNotSpecifiedMentions" warn :class="$style.hasNotSpecifiedMentions">{{ i18n.ts.notSpecifiedMentionWarning }} - <button class="_textButton" @click="addMissingMention()">{{ i18n.ts.add }}</button></MkInfo>
+	<div v-show="useCw" :class="$style.cwOuter">
+		<input ref="cwInputEl" v-model="cw" :class="$style.cw" :placeholder="i18n.ts.annotation" @keydown="onKeydown" @keyup="onKeyup" @compositionend="onCompositionEnd">
+		<div v-if="maxCwTextLength - cwTextLength < 20" :class="['_acrylic', $style.cwTextCount, { [$style.cwTextOver]: cwTextLength > maxCwTextLength }]">{{ maxCwTextLength - cwTextLength }}</div>
+	</div>
+	<div :class="[$style.textOuter, { [$style.withCw]: useCw }]">
+		<div v-if="targetChannel" :class="$style.colorBar" :style="{ background: targetChannel.color }"></div>
+		<textarea ref="textareaEl" v-model="text" :class="[$style.text]" :disabled="posting || posted" :readonly="textAreaReadOnly" :placeholder="placeholder" data-testid="post-form-text" @keydown="onKeydown" @keyup="onKeyup" @paste="onPaste" @compositionupdate="onCompositionUpdate" @compositionend="onCompositionEnd"></textarea>
+		<div v-if="maxTextLength - textLength < 100" :class="['_acrylic', $style.textCount, { [$style.textOver]: textLength > maxTextLength }]">{{ maxTextLength - textLength }}</div>
+	</div>
+	<input v-show="withHashtags" ref="hashtagsInputEl" v-model="hashtags" :class="$style.hashtags" :placeholder="i18n.ts.hashtags" list="hashtags">
+	<XPostFormAttaches v-model="files" @detach="detachFile" @changeSensitive="updateFileSensitive" @changeName="updateFileName"/>
+	<div v-if="uploader.items.value.length > 0" style="padding: 12px;">
+		<MkTip k="postFormUploader">
+			{{ i18n.ts._postForm.uploaderTip }}
+		</MkTip>
+		<MkUploaderItems :items="uploader.items.value" @showMenu="(item, ev) => showPerUploadItemMenu(item, ev)" @showMenuViaContextmenu="(item, ev) => showPerUploadItemMenuViaContextmenu(item, ev)"/>
+	</div>
+	<MkPollEditor v-if="poll" v-model="poll" @destroyed="poll = null"/>
+	<MkNotePreview v-if="showPreview" :class="$style.preview" :text="text" :files="files" :poll="poll ?? undefined" :useCw="useCw" :cw="cw" :user="postAccount ?? $i"/>
+	<div v-if="showingOptions" style="padding: 8px 16px;">
+	</div>
+	<footer ref="footerEl" :class="$style.footer">
+		<div :class="$style.footerLeft">
+			<button v-tooltip="i18n.ts.attachFile + ' (' + i18n.ts.upload + ')'" class="_button" :class="$style.footerButton" @click="chooseFileFromPc"><i class="ti ti-photo-plus"></i></button>
+			<button v-tooltip="i18n.ts.attachFile + ' (' + i18n.ts.fromDrive + ')'" class="_button" :class="$style.footerButton" @click="chooseFileFromDrive"><i class="ti ti-cloud-download"></i></button>
+			<button v-tooltip="i18n.ts.poll" class="_button" :class="[$style.footerButton, { [$style.footerButtonActive]: poll }]" @click="togglePoll"><i class="ti ti-chart-arrows"></i></button>
+			<button v-tooltip="i18n.ts.useCw" class="_button" :class="[$style.footerButton, { [$style.footerButtonActive]: useCw }]" @click="useCw = !useCw"><i class="ti ti-eye-off"></i></button>
+			<button v-tooltip="i18n.ts.hashtags" class="_button" :class="[$style.footerButton, { [$style.footerButtonActive]: withHashtags }]" @click="withHashtags = !withHashtags"><i class="ti ti-hash"></i></button>
+			<button v-tooltip="i18n.ts.mention" class="_button" :class="$style.footerButton" @click="insertMention"><i class="ti ti-at"></i></button>
+			<button v-if="showAddMfmFunction" v-tooltip="i18n.ts.addMfmFunction" :class="['_button', $style.footerButton]" @click="insertMfmFunction"><i class="ti ti-palette"></i></button>
+			<button v-if="postFormActions.length > 0" v-tooltip="i18n.ts.plugins" class="_button" :class="$style.footerButton" @click="showActions"><i class="ti ti-plug"></i></button>
+		</div>
+		<div :class="$style.footerRight">
+			<button v-tooltip="i18n.ts.emoji" :class="['_button', $style.footerButton]" @click="insertEmoji"><i class="ti ti-mood-happy"></i></button>
+		</div>
+	</footer>
+	<datalist id="hashtags">
+		<option v-for="hashtag in recentHashtags" :key="hashtag" :value="hashtag"></option>
+	</datalist>
+</div>
 </template>
 
 <script lang="ts" setup>
@@ -382,50 +127,50 @@ import {
 	useTemplateRef,
 	onUnmounted,
 	onBeforeUnmount,
-} from "vue";
-import * as mfm from "mfm-js";
-import * as Misskey from "misskey-js";
-import insertTextAtCursor from "insert-text-at-cursor";
-import { toASCII } from "punycode.js";
-import { host, url } from "@@/js/config.js";
-import MkUploaderItems from "./MkUploaderItems.vue";
-import type { ShallowRef } from "vue";
-import type { PostFormProps } from "@/types/post-form.js";
-import type { MenuItem } from "@/types/menu.js";
-import type { PollEditorModelValue } from "@/components/MkPollEditor.vue";
-import type { UploaderItem } from "@/composables/use-uploader.js";
-import MkNotePreview from "@/components/MkNotePreview.vue";
-import XPostFormAttaches from "@/components/MkPostFormAttaches.vue";
-import XTextCounter from "@/components/MkPostForm.TextCounter.vue";
-import MkPollEditor from "@/components/MkPollEditor.vue";
-import MkNoteSimple from "@/components/MkNoteSimple.vue";
-import { erase, unique } from "@/utility/array.js";
-import { extractMentions } from "@/utility/extract-mentions.js";
-import { formatTimeString } from "@/utility/format-time-string.js";
-import { Autocomplete } from "@/utility/autocomplete.js";
-import * as os from "@/os.js";
-import { misskeyApi } from "@/utility/misskey-api.js";
-import { chooseDriveFile } from "@/utility/drive.js";
-import { store } from "@/store.js";
-import MkInfo from "@/components/MkInfo.vue";
-import { i18n } from "@/i18n.js";
-import { instance } from "@/instance.js";
-import { ensureSignin, notesCount, incNotesCount } from "@/i.js";
-import { getAccounts, getAccountMenu } from "@/accounts.js";
-import { deepClone } from "@/utility/clone.js";
-import MkRippleEffect from "@/components/MkRippleEffect.vue";
-import { miLocalStorage } from "@/local-storage.js";
-import { claimAchievement } from "@/utility/achievements.js";
-import { emojiPicker } from "@/utility/emoji-picker.js";
-import { mfmFunctionPicker } from "@/utility/mfm-function-picker.js";
-import { prefer } from "@/preferences.js";
-import { getPluginHandlers } from "@/plugin.js";
-import { DI } from "@/di.js";
-import { globalEvents } from "@/events.js";
-import { checkDragDataType, getDragData } from "@/drag-and-drop.js";
-import { useUploader } from "@/composables/use-uploader.js";
-import { startTour } from "@/utility/tour.js";
-import { closeTip } from "@/tips.js";
+} from 'vue';
+import * as mfm from 'mfm-js';
+import * as Misskey from 'misskey-js';
+import insertTextAtCursor from 'insert-text-at-cursor';
+import { toASCII } from 'punycode.js';
+import { host, url } from '@@/js/config.js';
+import MkUploaderItems from './MkUploaderItems.vue';
+import type { ShallowRef } from 'vue';
+import type { PostFormProps } from '@/types/post-form.js';
+import type { MenuItem } from '@/types/menu.js';
+import type { PollEditorModelValue } from '@/components/MkPollEditor.vue';
+import type { UploaderItem } from '@/composables/use-uploader.js';
+import MkNotePreview from '@/components/MkNotePreview.vue';
+import XPostFormAttaches from '@/components/MkPostFormAttaches.vue';
+import XTextCounter from '@/components/MkPostForm.TextCounter.vue';
+import MkPollEditor from '@/components/MkPollEditor.vue';
+import MkNoteSimple from '@/components/MkNoteSimple.vue';
+import { erase, unique } from '@/utility/array.js';
+import { extractMentions } from '@/utility/extract-mentions.js';
+import { formatTimeString } from '@/utility/format-time-string.js';
+import { Autocomplete } from '@/utility/autocomplete.js';
+import * as os from '@/os.js';
+import { misskeyApi } from '@/utility/misskey-api.js';
+import { chooseDriveFile } from '@/utility/drive.js';
+import { store } from '@/store.js';
+import MkInfo from '@/components/MkInfo.vue';
+import { i18n } from '@/i18n.js';
+import { instance } from '@/instance.js';
+import { ensureSignin, notesCount, incNotesCount } from '@/i.js';
+import { getAccounts, getAccountMenu } from '@/accounts.js';
+import { deepClone } from '@/utility/clone.js';
+import MkRippleEffect from '@/components/MkRippleEffect.vue';
+import { miLocalStorage } from '@/local-storage.js';
+import { claimAchievement } from '@/utility/achievements.js';
+import { emojiPicker } from '@/utility/emoji-picker.js';
+import { mfmFunctionPicker } from '@/utility/mfm-function-picker.js';
+import { prefer } from '@/preferences.js';
+import { getPluginHandlers } from '@/plugin.js';
+import { DI } from '@/di.js';
+import { globalEvents } from '@/events.js';
+import { checkDragDataType, getDragData } from '@/drag-and-drop.js';
+import { useUploader } from '@/composables/use-uploader.js';
+import { startTour } from '@/utility/tour.js';
+import { closeTip } from '@/tips.js';
 
 const $i = ensureSignin();
 
@@ -449,34 +194,34 @@ const props = withDefaults(
 provide(DI.mock, props.mock);
 
 const emit = defineEmits<{
-	(ev: "posted"): void;
-	(ev: "cancel"): void;
-	(ev: "esc"): void;
+	(ev: 'posted'): void;
+	(ev: 'cancel'): void;
+	(ev: 'esc'): void;
 
 	// Mock用
-	(ev: "fileChangeSensitive", fileId: string, to: boolean): void;
+	(ev: 'fileChangeSensitive', fileId: string, to: boolean): void;
 }>();
 
-const textareaEl = useTemplateRef("textareaEl");
-const cwInputEl = useTemplateRef("cwInputEl");
-const hashtagsInputEl = useTemplateRef("hashtagsInputEl");
-const visibilityButton = useTemplateRef("visibilityButton");
-const otherSettingsButton = useTemplateRef("otherSettingsButton");
-const accountMenuEl = useTemplateRef("accountMenuEl");
-const footerEl = useTemplateRef("footerEl");
-const submitButtonEl = useTemplateRef("submitButtonEl");
+const textareaEl = useTemplateRef('textareaEl');
+const cwInputEl = useTemplateRef('cwInputEl');
+const hashtagsInputEl = useTemplateRef('hashtagsInputEl');
+const visibilityButton = useTemplateRef('visibilityButton');
+const otherSettingsButton = useTemplateRef('otherSettingsButton');
+const accountMenuEl = useTemplateRef('accountMenuEl');
+const footerEl = useTemplateRef('footerEl');
+const submitButtonEl = useTemplateRef('submitButtonEl');
 
 const posting = ref(false);
 const posted = ref(false);
-const text = ref(props.initialText ?? "");
+const text = ref(props.initialText ?? '');
 const files = ref(props.initialFiles ?? []);
 const poll = ref<PollEditorModelValue | null>(null);
 const useCw = ref<boolean>(!!props.initialCw);
 const showPreview = ref(store.s.showPreview);
-watch(showPreview, () => store.set("showPreview", showPreview.value));
+watch(showPreview, () => store.set('showPreview', showPreview.value));
 const showAddMfmFunction = ref(prefer.s.enableQuickAddMfmFunction);
 watch(showAddMfmFunction, () =>
-	prefer.commit("enableQuickAddMfmFunction", showAddMfmFunction.value),
+	prefer.commit('enableQuickAddMfmFunction', showAddMfmFunction.value),
 );
 const cw = ref<string | null>(props.initialCw ?? null);
 const localOnly = ref(
@@ -501,22 +246,22 @@ const draghover = ref(false);
 const quoteId = ref<string | null>(null);
 const hasNotSpecifiedMentions = ref(false);
 const recentHashtags = ref(
-	JSON.parse(miLocalStorage.getItem("hashtags") ?? "[]"),
+	JSON.parse(miLocalStorage.getItem('hashtags') ?? '[]'),
 );
-const imeText = ref("");
+const imeText = ref('');
 const showingOptions = ref(false);
 const textAreaReadOnly = ref(false);
 const justEndedComposition = ref(false);
-const renoteTargetNote: ShallowRef<PostFormProps["renote"] | null> = shallowRef(
+const renoteTargetNote: ShallowRef<PostFormProps['renote'] | null> = shallowRef(
 	props.renote,
 );
-const replyTargetNote: ShallowRef<PostFormProps["reply"] | null> = shallowRef(
+const replyTargetNote: ShallowRef<PostFormProps['reply'] | null> = shallowRef(
 	props.reply,
 );
 const targetChannel = shallowRef(props.channel);
 
 const serverDraftId = ref<string | null>(null);
-const postFormActions = getPluginHandlers("post_form_action");
+const postFormActions = getPluginHandlers('post_form_action');
 
 let textAutocomplete: Autocomplete | null = null;
 let cwAutocomplete: Autocomplete | null = null;
@@ -530,13 +275,13 @@ onUnmounted(() => {
 	uploader.dispose();
 });
 
-uploader.events.on("itemUploaded", (ctx) => {
+uploader.events.on('itemUploaded', (ctx) => {
 	files.value.push(ctx.item.uploaded!);
 	uploader.removeItem(ctx.item);
 });
 
 const draftKey = computed((): string => {
-	let key = targetChannel.value ? `channel:${targetChannel.value.id}` : "";
+	let key = targetChannel.value ? `channel:${targetChannel.value.id}` : '';
 
 	if (renoteTargetNote.value) {
 		key += `renote:${renoteTargetNote.value.id}`;
@@ -581,14 +326,14 @@ const submitText = computed((): string => {
 
 const submitIcon = computed((): string => {
 	return posted.value
-		? "ti ti-check"
+		? 'ti ti-check'
 		: scheduledAt.value != null
-			? "ti ti-calendar-time"
+			? 'ti ti-calendar-time'
 			: replyTargetNote.value
-				? "ti ti-arrow-back-up"
+				? 'ti ti-arrow-back-up'
 				: renoteTargetNote.value
-					? "ti ti-quote"
-					: "ti ti-send";
+					? 'ti ti-quote'
+					: 'ti ti-send';
 });
 
 const textLength = computed((): number => {
@@ -621,7 +366,7 @@ const canPost = computed((): boolean => {
 		textLength.value <= maxTextLength.value &&
 		(useCw.value
 			? cw.value != null &&
-				cw.value.trim() !== "" &&
+				cw.value.trim() !== '' &&
 				cwTextLength.value <= maxCwTextLength
 			: true) &&
 		files.value.length <= 16 &&
@@ -637,8 +382,8 @@ const canSaveAsServerDraft = computed((): boolean => {
 	);
 });
 
-const withHashtags = store.model("postFormWithHashtags");
-const hashtags = store.model("postFormHashtags");
+const withHashtags = store.model('postFormWithHashtags');
+const hashtags = store.model('postFormHashtags');
 
 watch(
 	text,
@@ -670,7 +415,7 @@ if (props.mention) {
 	text.value = props.mention.host
 		? `@${props.mention.username}@${toASCII(props.mention.host)}`
 		: `@${props.mention.username}`;
-	text.value += " ";
+	text.value += ' ';
 }
 
 if (
@@ -679,7 +424,7 @@ if (
 		(replyTargetNote.value.user.host != null &&
 			replyTargetNote.value.user.host !== host))
 ) {
-	text.value = `@${replyTargetNote.value.user.username}${replyTargetNote.value.user.host != null ? "@" + toASCII(replyTargetNote.value.user.host) : ""} `;
+	text.value = `@${replyTargetNote.value.user.username}${replyTargetNote.value.user.host != null ? '@' + toASCII(replyTargetNote.value.user.host) : ''} `;
 }
 
 if (replyTargetNote.value && replyTargetNote.value.text != null) {
@@ -703,37 +448,37 @@ if (replyTargetNote.value && replyTargetNote.value.text != null) {
 	}
 }
 
-if ($i.isSilenced && visibility.value === "public") {
-	visibility.value = "home";
+if ($i.isSilenced && visibility.value === 'public') {
+	visibility.value = 'home';
 }
 
 if (targetChannel.value) {
-	visibility.value = "public";
+	visibility.value = 'public';
 	localOnly.value = true; // TODO: チャンネルが連合するようになった折には消す
 }
 
 // 公開以外へのリプライ時は元の公開範囲を引き継ぐ
 if (
 	replyTargetNote.value &&
-	["home", "followers", "specified"].includes(replyTargetNote.value.visibility)
+	['home', 'followers', 'specified'].includes(replyTargetNote.value.visibility)
 ) {
 	if (
-		replyTargetNote.value.visibility === "home" &&
-		visibility.value === "followers"
+		replyTargetNote.value.visibility === 'home' &&
+		visibility.value === 'followers'
 	) {
-		visibility.value = "followers";
+		visibility.value = 'followers';
 	} else if (
-		["home", "followers"].includes(replyTargetNote.value.visibility) &&
-		visibility.value === "specified"
+		['home', 'followers'].includes(replyTargetNote.value.visibility) &&
+		visibility.value === 'specified'
 	) {
-		visibility.value = "specified";
+		visibility.value = 'specified';
 	} else {
 		visibility.value = replyTargetNote.value.visibility;
 	}
 
-	if (visibility.value === "specified") {
+	if (visibility.value === 'specified') {
 		if (replyTargetNote.value.visibleUserIds) {
-			misskeyApi("users/show", {
+			misskeyApi('users/show', {
 				userIds: replyTargetNote.value.visibleUserIds.filter(
 					(uid) => uid !== $i.id && uid !== replyTargetNote.value?.userId,
 				),
@@ -743,7 +488,7 @@ if (
 		}
 
 		if (replyTargetNote.value.userId !== $i.id) {
-			misskeyApi("users/show", { userId: replyTargetNote.value.userId }).then(
+			misskeyApi('users/show', { userId: replyTargetNote.value.userId }).then(
 				(user) => {
 					pushVisibleUser(user);
 				},
@@ -759,22 +504,22 @@ if (
 	props.reply.dontShowOnLtl === true &&
 	$i.policies.canPublicNonLtlNote
 ) {
-	visibility.value = "public_non_ltl";
+	visibility.value = 'public_non_ltl';
 }
 
 // 自身のセミパブリックノートへのリプライである場合かつパブリック投稿へのリプライでセミパブリック投稿にする
 if (
 	props.reply &&
-	props.reply.visibility === "public" &&
+	props.reply.visibility === 'public' &&
 	props.reply.reply?.userId === $i.id &&
 	props.reply.reply?.dontShowOnLtl === true
 ) {
-	visibility.value = "public_non_ltl";
+	visibility.value = 'public_non_ltl';
 }
 // #endregion
 
 if (props.specified) {
-	visibility.value = "specified";
+	visibility.value = 'specified';
 	pushVisibleUser(props.specified);
 }
 
@@ -798,15 +543,11 @@ function watchForDraft() {
 }
 
 function checkMissingMention() {
-	if (visibility.value === "specified") {
+	if (visibility.value === 'specified') {
 		const ast = mfm.parse(text.value);
 
 		for (const x of extractMentions(ast)) {
-			if (
-				!visibleUsers.value.some(
-					(u) => u.username === x.username && u.host === x.host,
-				)
-			) {
+			if (!visibleUsers.value.some(u => (u.username === x.username) && ((u.host === x.host) || (x.host === host && u.host == null)))) {
 				hasNotSpecifiedMentions.value = true;
 				return;
 			}
@@ -824,7 +565,7 @@ function addMissingMention() {
 				(u) => u.username === x.username && u.host === x.host,
 			)
 		) {
-			misskeyApi("users/show", { username: x.username, host: x.host }).then(
+			misskeyApi('users/show', { username: x.username, host: x.host }).then(
 				(user) => {
 					pushVisibleUser(user);
 				},
@@ -838,7 +579,7 @@ function togglePoll() {
 		poll.value = null;
 	} else {
 		poll.value = {
-			choices: ["", ""],
+			choices: ['', ''],
 			multiple: false,
 			expiresAt: null,
 			expiredAfter: null,
@@ -878,7 +619,7 @@ function chooseFileFromDrive(ev: PointerEvent) {
 	});
 }
 
-function detachFile(id: Misskey.entities.DriveFile["id"]) {
+function detachFile(id: Misskey.entities.DriveFile['id']) {
 	files.value = files.value.filter((x) => x.id !== id);
 }
 
@@ -887,7 +628,7 @@ function updateFileSensitive(
 	isSensitive: boolean,
 ) {
 	if (props.mock) {
-		emit("fileChangeSensitive", file.id, isSensitive);
+		emit('fileChangeSensitive', file.id, isSensitive);
 	}
 	files.value[files.value.findIndex((x) => x.id === file.id)].isSensitive =
 		isSensitive;
@@ -895,20 +636,20 @@ function updateFileSensitive(
 
 function updateFileName(
 	file: Misskey.entities.DriveFile,
-	name: Misskey.entities.DriveFile["name"],
+	name: Misskey.entities.DriveFile['name'],
 ) {
 	files.value[files.value.findIndex((x) => x.id === file.id)].name = name;
 }
 
 function setVisibility() {
 	if (targetChannel.value) {
-		visibility.value = "public";
+		visibility.value = 'public';
 		localOnly.value = true; // TODO: チャンネルが連合するようになった折には消す
 		return;
 	}
 
 	const { dispose } = os.popup(
-		defineAsyncComponent(() => import("@/components/MkVisibilityPicker.vue")),
+		defineAsyncComponent(() => import('@/components/MkVisibilityPicker.vue')),
 		{
 			currentVisibility: visibility.value,
 			isSilenced: $i.isSilenced,
@@ -918,7 +659,7 @@ function setVisibility() {
 			...(replyTargetNote.value
 				? {
 						isReplyVisibilitySpecified:
-							replyTargetNote.value.visibility === "specified",
+							replyTargetNote.value.visibility === 'specified',
 					}
 				: {}),
 		},
@@ -926,7 +667,7 @@ function setVisibility() {
 			changeVisibility: (v) => {
 				visibility.value = v;
 				if (prefer.s.rememberNoteVisibility) {
-					store.set("visibility", visibility.value);
+					store.set('visibility', visibility.value);
 				}
 			},
 			closed: () => dispose(),
@@ -936,46 +677,46 @@ function setVisibility() {
 
 async function toggleLocalOnly() {
 	if (targetChannel.value) {
-		visibility.value = "public";
+		visibility.value = 'public';
 		localOnly.value = true; // TODO: チャンネルが連合するようになった折には消す
 		return;
 	}
 
-	const neverShowInfo = miLocalStorage.getItem("neverShowLocalOnlyInfo");
+	const neverShowInfo = miLocalStorage.getItem('neverShowLocalOnlyInfo');
 
-	if (!localOnly.value && neverShowInfo !== "true") {
+	if (!localOnly.value && neverShowInfo !== 'true') {
 		const confirm = await os.actions({
-			type: "question",
+			type: 'question',
 			title: i18n.ts.disableFederationConfirm,
 			text: i18n.ts.disableFederationConfirmWarn,
 			actions: [
 				{
-					value: "yes" as const,
+					value: 'yes' as const,
 					text: i18n.ts.disableFederationOk,
 					primary: true,
 				},
 				{
-					value: "neverShow" as const,
+					value: 'neverShow' as const,
 					text: `${i18n.ts.disableFederationOk} (${i18n.ts.neverShow})`,
 					danger: true,
 				},
 				{
-					value: "no" as const,
+					value: 'no' as const,
 					text: i18n.ts.cancel,
 				},
 			],
 		});
 		if (confirm.canceled) return;
-		if (confirm.result === "no") return;
+		if (confirm.result === 'no') return;
 
-		if (confirm.result === "neverShow") {
-			miLocalStorage.setItem("neverShowLocalOnlyInfo", "true");
+		if (confirm.result === 'neverShow') {
+			miLocalStorage.setItem('neverShowLocalOnlyInfo', 'true');
 		}
 	}
 
 	localOnly.value = !localOnly.value;
 	if (prefer.s.rememberNoteVisibility) {
-		store.set("localOnly", localOnly.value);
+		store.set('localOnly', localOnly.value);
 	}
 }
 
@@ -984,13 +725,13 @@ async function toggleReactionAcceptance() {
 		title: i18n.ts.reactionAcceptance,
 		items: [
 			{ value: null, label: i18n.ts.all },
-			{ value: "likeOnlyForRemote" as const, label: i18n.ts.likeOnlyForRemote },
-			{ value: "nonSensitiveOnly" as const, label: i18n.ts.nonSensitiveOnly },
+			{ value: 'likeOnlyForRemote' as const, label: i18n.ts.likeOnlyForRemote },
+			{ value: 'nonSensitiveOnly' as const, label: i18n.ts.nonSensitiveOnly },
 			{
-				value: "nonSensitiveOnlyForLocalLikeOnlyForRemote" as const,
+				value: 'nonSensitiveOnlyForLocalLikeOnlyForRemote' as const,
 				label: i18n.ts.nonSensitiveOnlyForLocalLikeOnlyForRemote,
 			},
-			{ value: "likeOnly" as const, label: i18n.ts.likeOnly },
+			{ value: 'likeOnly' as const, label: i18n.ts.likeOnly },
 		],
 		default: reactionAcceptance.value,
 	});
@@ -1000,25 +741,25 @@ async function toggleReactionAcceptance() {
 
 //#region その他の設定メニューpopup
 function showOtherSettings() {
-	let reactionAcceptanceIcon = "ti ti-icons";
-	let reactionAcceptanceCaption = "";
+	let reactionAcceptanceIcon = 'ti ti-icons';
+	let reactionAcceptanceCaption = '';
 
 	switch (reactionAcceptance.value) {
-		case "likeOnly":
-			reactionAcceptanceIcon = "ti ti-heart _love";
+		case 'likeOnly':
+			reactionAcceptanceIcon = 'ti ti-heart _love';
 			reactionAcceptanceCaption = i18n.ts.likeOnly;
 			break;
 
-		case "likeOnlyForRemote":
-			reactionAcceptanceIcon = "ti ti-heart-plus";
+		case 'likeOnlyForRemote':
+			reactionAcceptanceIcon = 'ti ti-heart-plus';
 			reactionAcceptanceCaption = i18n.ts.likeOnlyForRemote;
 			break;
 
-		case "nonSensitiveOnly":
+		case 'nonSensitiveOnly':
 			reactionAcceptanceCaption = i18n.ts.nonSensitiveOnly;
 			break;
 
-		case "nonSensitiveOnlyForLocalLikeOnlyForRemote":
+		case 'nonSensitiveOnlyForLocalLikeOnlyForRemote':
 			reactionAcceptanceCaption =
 				i18n.ts.nonSensitiveOnlyForLocalLikeOnlyForRemote;
 			break;
@@ -1030,13 +771,13 @@ function showOtherSettings() {
 
 	const menuItems = [
 		{
-			type: "component",
+			type: 'component',
 			component: XTextCounter,
 			props: {
 				textLength: textLength,
 			},
 		},
-		{ type: "divider" },
+		{ type: 'divider' },
 		{
 			icon: reactionAcceptanceIcon,
 			text: i18n.ts.reactionAcceptance,
@@ -1045,15 +786,15 @@ function showOtherSettings() {
 				toggleReactionAcceptance();
 			},
 		},
-		{ type: "divider" },
+		{ type: 'divider' },
 		{
-			type: "button",
+			type: 'button',
 			text: i18n.ts._drafts.saveToDraft,
-			icon: "ti ti-cloud-upload",
+			icon: 'ti ti-cloud-upload',
 			action: async () => {
 				if (!canSaveAsServerDraft.value) {
 					return os.alert({
-						type: "error",
+						type: 'error',
 						text: i18n.ts._drafts.cannotCreateDraft,
 					});
 				}
@@ -1063,29 +804,29 @@ function showOtherSettings() {
 		...($i.policies.scheduledNoteLimit > 0
 			? [
 					{
-						icon: "ti ti-calendar-time",
-						text: i18n.ts.schedulePost + "...",
+						icon: 'ti ti-calendar-time',
+						text: i18n.ts.schedulePost + '...',
 						action: () => {
 							schedule();
 						},
 					},
 				]
 			: []),
-		{ type: "divider" },
+		{ type: 'divider' },
 		{
-			type: "switch",
-			icon: "ti ti-eye",
+			type: 'switch',
+			icon: 'ti ti-eye',
 			text: i18n.ts.preview,
 			ref: showPreview,
 		},
 		{
-			icon: "ti ti-trash",
+			icon: 'ti ti-trash',
 			text: i18n.ts.reset,
 			danger: true,
 			action: async () => {
 				if (props.mock) return;
 				const { canceled } = await os.confirm({
-					type: "question",
+					type: 'question',
 					text: i18n.ts.resetAreYouSure,
 				});
 				if (canceled) return;
@@ -1123,20 +864,21 @@ function removeVisibleUser(id: string) {
 }
 
 function clear() {
-	text.value = "";
+	text.value = '';
 	cw.value = null;
 	files.value = [];
 	poll.value = null;
 	quoteId.value = null;
 	scheduledAt.value = null;
+	uploader.reset();
 }
 
 function onKeydown(ev: KeyboardEvent) {
-	if (ev.key === "Enter" && (ev.ctrlKey || ev.metaKey) && canPost.value) post();
+	if (ev.key === 'Enter' && (ev.ctrlKey || ev.metaKey) && canPost.value) post();
 
 	// justEndedComposition.value is for Safari, which keyDown occurs after compositionend.
 	// ev.isComposing is for another browsers.
-	if (ev.key === "Escape" && !justEndedComposition.value && !ev.isComposing) emit("esc");
+	if (ev.key === 'Escape' && !justEndedComposition.value && !ev.isComposing) emit('esc');
 }
 
 function onKeyup(ev: KeyboardEvent) {
@@ -1148,11 +890,11 @@ function onCompositionUpdate(ev: CompositionEvent) {
 }
 
 function onCompositionEnd(ev: CompositionEvent) {
-	imeText.value = "";
+	imeText.value = '';
 	justEndedComposition.value = true;
 }
 
-const pastedFileName = "yyyy-MM-dd HH-mm-ss [{{number}}]";
+const pastedFileName = 'yyyy-MM-dd HH-mm-ss [{{number}}]';
 
 async function onPaste(ev: ClipboardEvent) {
 	if (props.mock) return;
@@ -1164,11 +906,11 @@ async function onPaste(ev: ClipboardEvent) {
 		item: data,
 		i: x,
 	}))) {
-		if (item.kind === "file") {
+		if (item.kind === 'file') {
 			const file = item.getAsFile();
 			if (!file) continue;
-			const lio = file.name.lastIndexOf(".");
-			const ext = lio >= 0 ? file.name.slice(lio) : "";
+			const lio = file.name.lastIndexOf('.');
+			const ext = lio >= 0 ? file.name.slice(lio) : '';
 			const formattedName = `${formatTimeString(new Date(file.lastModified), pastedFileName).replace(/{{number}}/g, `${i + 1}`)}${ext}`;
 			const renamedFile = new File([file], formattedName, { type: file.type });
 			pastedFiles.push(renamedFile);
@@ -1180,17 +922,17 @@ async function onPaste(ev: ClipboardEvent) {
 		return;
 	}
 
-	const paste = ev.clipboardData.getData("text");
+	const paste = ev.clipboardData.getData('text');
 
 	if (
 		!renoteTargetNote.value &&
 		!quoteId.value &&
-		paste.startsWith(url + "/notes/")
+		paste.startsWith(url + '/notes/')
 	) {
 		ev.preventDefault();
 
 		const { canceled } = await os.confirm({
-			type: "info",
+			type: 'info',
 			text: i18n.ts.quoteQuestion,
 		});
 
@@ -1207,7 +949,7 @@ async function onPaste(ev: ClipboardEvent) {
 		ev.preventDefault();
 
 		const { canceled } = await os.confirm({
-			type: "info",
+			type: 'info',
 			text: i18n.ts.attachAsFileQuestion,
 		});
 
@@ -1218,9 +960,9 @@ async function onPaste(ev: ClipboardEvent) {
 
 		const fileName = formatTimeString(new Date(), pastedFileName).replace(
 			/{{number}}/g,
-			"0",
+			'0',
 		);
-		const file = new File([paste], `${fileName}.txt`, { type: "text/plain" });
+		const file = new File([paste], `${fileName}.txt`, { type: 'text/plain' });
 		uploader.addFiles([file]);
 	}
 }
@@ -1229,24 +971,24 @@ function onDragover(ev: DragEvent) {
 	if (ev.dataTransfer == null) return;
 	if (ev.dataTransfer.items[0] == null) return;
 
-	const isFile = ev.dataTransfer.items[0].kind === "file";
-	if (isFile || checkDragDataType(ev, ["driveFiles"])) {
+	const isFile = ev.dataTransfer.items[0].kind === 'file';
+	if (isFile || checkDragDataType(ev, ['driveFiles'])) {
 		ev.preventDefault();
 		draghover.value = true;
 		switch (ev.dataTransfer.effectAllowed) {
-			case "all":
-			case "uninitialized":
-			case "copy":
-			case "copyLink":
-			case "copyMove":
-				ev.dataTransfer.dropEffect = "copy";
+			case 'all':
+			case 'uninitialized':
+			case 'copy':
+			case 'copyLink':
+			case 'copyMove':
+				ev.dataTransfer.dropEffect = 'copy';
 				break;
-			case "linkMove":
-			case "move":
-				ev.dataTransfer.dropEffect = "move";
+			case 'linkMove':
+			case 'move':
+				ev.dataTransfer.dropEffect = 'move';
 				break;
 			default:
-				ev.dataTransfer.dropEffect = "none";
+				ev.dataTransfer.dropEffect = 'none';
 				break;
 		}
 	}
@@ -1272,7 +1014,7 @@ function onDrop(ev: DragEvent): void {
 
 	//#region ドライブのファイル
 	{
-		const droppedData = getDragData(ev, "driveFiles");
+		const droppedData = getDragData(ev, 'driveFiles');
 		if (droppedData != null) {
 			files.value.push(...droppedData);
 			ev.preventDefault();
@@ -1289,21 +1031,21 @@ type StoredDrafts = {
 			useCw: boolean;
 			cw: string | null;
 			visibility:
-				| "public"
-				| "public_non_ltl"
-				| "home"
-				| "followers"
-				| "specified";
+				| 'public'
+				| 'public_non_ltl'
+				| 'home'
+				| 'followers'
+				| 'specified';
 			localOnly: boolean;
 			files: Misskey.entities.DriveFile[];
 			poll: PollEditorModelValue | null;
 			visibleUserIds?: string[];
 			quoteId: string | null;
 			reactionAcceptance:
-				| "likeOnly"
-				| "likeOnlyForRemote"
-				| "nonSensitiveOnly"
-				| "nonSensitiveOnlyForLocalLikeOnlyForRemote"
+				| 'likeOnly'
+				| 'likeOnlyForRemote'
+				| 'nonSensitiveOnly'
+				| 'nonSensitiveOnlyForLocalLikeOnlyForRemote'
 				| null;
 			scheduledAt: number | null;
 		};
@@ -1314,7 +1056,7 @@ function saveDraft() {
 	if (props.instant || props.mock) return;
 
 	const draftsData = JSON.parse(
-		miLocalStorage.getItem("drafts") ?? "{}",
+		miLocalStorage.getItem('drafts') ?? '{}',
 	) as StoredDrafts;
 
 	draftsData[draftKey.value] = {
@@ -1336,17 +1078,17 @@ function saveDraft() {
 		},
 	};
 
-	miLocalStorage.setItem("drafts", JSON.stringify(draftsData));
+	miLocalStorage.setItem('drafts', JSON.stringify(draftsData));
 }
 
 function deleteDraft() {
 	const draftsData = JSON.parse(
-		miLocalStorage.getItem("drafts") ?? "{}",
+		miLocalStorage.getItem('drafts') ?? '{}',
 	) as StoredDrafts;
 
 	delete draftsData[draftKey.value];
 
-	miLocalStorage.setItem("drafts", JSON.stringify(draftsData));
+	miLocalStorage.setItem('drafts', JSON.stringify(draftsData));
 }
 
 async function saveServerDraft(
@@ -1355,7 +1097,7 @@ async function saveServerDraft(
 	} = {},
 ) {
 	return await os.apiWithDialog(
-		serverDraftId.value == null ? "notes/drafts/create" : "notes/drafts/update",
+		serverDraftId.value == null ? 'notes/drafts/create' : 'notes/drafts/update',
 		{
 			...(serverDraftId.value == null ? {} : { draftId: serverDraftId.value }),
 			text: text.value,
@@ -1382,11 +1124,11 @@ async function saveServerDraft(
 
 function isAnnoying(text: string): boolean {
 	return (
-		text.includes("$[x2") ||
-		text.includes("$[x3") ||
-		text.includes("$[x4") ||
-		text.includes("$[scale") ||
-		text.includes("$[position")
+		text.includes('$[x2') ||
+		text.includes('$[x3') ||
+		text.includes('$[x4') ||
+		text.includes('$[scale') ||
+		text.includes('$[position')
 	);
 }
 
@@ -1437,40 +1179,40 @@ async function post(ev?: PointerEvent) {
 	if (props.mock) return;
 
 	if (
-		visibility.value === "public" &&
+		visibility.value === 'public' &&
 		((useCw.value &&
 			cw.value != null &&
-			cw.value.trim() !== "" &&
+			cw.value.trim() !== '' &&
 			isAnnoying(cw.value)) || // CWが迷惑になる場合
-			((!useCw.value || cw.value == null || cw.value.trim() === "") &&
+			((!useCw.value || cw.value == null || cw.value.trim() === '') &&
 				text.value != null &&
-				text.value.trim() !== "" &&
+				text.value.trim() !== '' &&
 				isAnnoying(text.value))) // CWが無い かつ 本文が迷惑になる場合
 	) {
 		const { canceled, result } = await os.actions({
-			type: "warning",
+			type: 'warning',
 			text: i18n.ts.thisPostMayBeAnnoying,
 			actions: [
 				{
-					value: "home",
+					value: 'home',
 					text: i18n.ts.thisPostMayBeAnnoyingHome,
 					primary: true,
 				},
 				{
-					value: "cancel",
+					value: 'cancel',
 					text: i18n.ts.thisPostMayBeAnnoyingCancel,
 				},
 				{
-					value: "ignore",
+					value: 'ignore',
 					text: i18n.ts.thisPostMayBeAnnoyingIgnore,
 				},
 			],
 		});
 
 		if (canceled) return;
-		if (result === "cancel") return;
-		if (result === "home") {
-			visibility.value = "home";
+		if (result === 'cancel') return;
+		if (result === 'home') {
+			visibility.value = 'home';
 		}
 	}
 
@@ -1484,7 +1226,7 @@ async function post(ev?: PointerEvent) {
 	}
 
 	let postData = {
-		text: text.value === "" ? null : text.value,
+		text: text.value === '' ? null : text.value,
 		fileIds: files.value.length > 0 ? files.value.map((f) => f.id) : undefined,
 		replyId: replyTargetNote.value ? replyTargetNote.value.id : undefined,
 		renoteId: renoteTargetNote.value
@@ -1494,37 +1236,37 @@ async function post(ev?: PointerEvent) {
 				: undefined,
 		channelId: targetChannel.value ? targetChannel.value.id : undefined,
 		poll: poll.value,
-		cw: useCw.value ? (cw.value ?? "") : null,
-		localOnly: visibility.value === "specified" ? false : localOnly.value,
+		cw: useCw.value ? (cw.value ?? '') : null,
+		localOnly: visibility.value === 'specified' ? false : localOnly.value,
 		visibility: visibility.value,
 		visibleUserIds:
-			visibility.value === "specified"
+			visibility.value === 'specified'
 				? visibleUsers.value.map((u) => u.id)
 				: undefined,
 		reactionAcceptance: reactionAcceptance.value,
 	};
 
-	if (withHashtags.value && hashtags.value && hashtags.value.trim() !== "") {
+	if (withHashtags.value && hashtags.value && hashtags.value.trim() !== '') {
 		const hashtags_ = hashtags.value
 			.trim()
-			.split(" ")
-			.map((x) => (x.startsWith("#") ? x : "#" + x))
-			.join(" ");
+			.split(' ')
+			.map((x) => (x.startsWith('#') ? x : '#' + x))
+			.join(' ');
 		if (!postData.text) {
 			postData.text = hashtags_;
 		} else {
-			const postTextLines = postData.text.split("\n");
-			if (postTextLines[postTextLines.length - 1].trim() === "") {
+			const postTextLines = postData.text.split('\n');
+			if (postTextLines[postTextLines.length - 1].trim() === '') {
 				postTextLines[postTextLines.length - 1] += hashtags_;
 			} else {
-				postTextLines[postTextLines.length - 1] += " " + hashtags_;
+				postTextLines[postTextLines.length - 1] += ' ' + hashtags_;
 			}
-			postData.text = postTextLines.join("\n");
+			postData.text = postTextLines.join('\n');
 		}
 	}
 
 	// plugin
-	const notePostInterruptors = getPluginHandlers("note_post_interruptor");
+	const notePostInterruptors = getPluginHandlers('note_post_interruptor');
 	if (notePostInterruptors.length > 0) {
 		for (const interruptor of notePostInterruptors) {
 			try {
@@ -1548,15 +1290,15 @@ async function post(ev?: PointerEvent) {
 			token = storedAccount.token;
 		} else {
 			await os.alert({
-				type: "error",
-				text: "cannot find the token of the selected account.",
+				type: 'error',
+				text: 'cannot find the token of the selected account.',
 			});
 			return;
 		}
 	}
 
 	posting.value = true;
-	misskeyApi("notes/create", postData, token)
+	misskeyApi('notes/create', postData, token)
 		.then((res) => {
 			if (props.freezeAfterPosted) {
 				posted.value = true;
@@ -1564,21 +1306,21 @@ async function post(ev?: PointerEvent) {
 				clear();
 			}
 
-			globalEvents.emit("notePosted", res.createdNote);
+			globalEvents.emit('notePosted', res.createdNote);
 
 			nextTick(() => {
 				deleteDraft();
-				emit("posted");
-				if (postData.text && postData.text !== "") {
+				emit('posted');
+				if (postData.text && postData.text !== '') {
 					const hashtags_ = mfm
 						.parse(postData.text)
-						.map((x) => x.type === "hashtag" && x.props.hashtag)
+						.map((x) => x.type === 'hashtag' && x.props.hashtag)
 						.filter((x) => x) as string[];
 					const history = JSON.parse(
-						miLocalStorage.getItem("hashtags") ?? "[]",
+						miLocalStorage.getItem('hashtags') ?? '[]',
 					) as string[];
 					miLocalStorage.setItem(
-						"hashtags",
+						'hashtags',
 						JSON.stringify(unique(hashtags_.concat(history))),
 					);
 				}
@@ -1587,34 +1329,34 @@ async function post(ev?: PointerEvent) {
 
 				incNotesCount();
 				if (notesCount === 1) {
-					claimAchievement("notes1");
+					claimAchievement('notes1');
 				}
 
-				const text = postData.text ?? "";
+				const text = postData.text ?? '';
 				const lowerCase = text.toLowerCase();
 				if (
-					(lowerCase.includes("love") || lowerCase.includes("❤")) &&
-					lowerCase.includes("misskey")
+					(lowerCase.includes('love') || lowerCase.includes('❤')) &&
+					lowerCase.includes('misskey')
 				) {
-					claimAchievement("iLoveMisskey");
+					claimAchievement('iLoveMisskey');
 				}
 				if (
 					[
-						"https://youtu.be/Efrlqw8ytg4",
-						"https://www.youtube.com/watch?v=Efrlqw8ytg4",
-						"https://m.youtube.com/watch?v=Efrlqw8ytg4",
+						'https://youtu.be/Efrlqw8ytg4',
+						'https://www.youtube.com/watch?v=Efrlqw8ytg4',
+						'https://m.youtube.com/watch?v=Efrlqw8ytg4',
 
-						"https://youtu.be/XVCwzwxdHuA",
-						"https://www.youtube.com/watch?v=XVCwzwxdHuA",
-						"https://m.youtube.com/watch?v=XVCwzwxdHuA",
+						'https://youtu.be/XVCwzwxdHuA',
+						'https://www.youtube.com/watch?v=XVCwzwxdHuA',
+						'https://m.youtube.com/watch?v=XVCwzwxdHuA',
 
-						"https://open.spotify.com/track/3Cuj0mZrlLoXx9nydNi7RB",
-						"https://open.spotify.com/track/7anfcaNPQWlWCwyCHmZqNy",
-						"https://open.spotify.com/track/5Odr16TvEN4my22K9nbH7l",
-						"https://open.spotify.com/album/5bOlxyl4igOrp2DwVQxBco",
+						'https://open.spotify.com/track/3Cuj0mZrlLoXx9nydNi7RB',
+						'https://open.spotify.com/track/7anfcaNPQWlWCwyCHmZqNy',
+						'https://open.spotify.com/track/5Odr16TvEN4my22K9nbH7l',
+						'https://open.spotify.com/album/5bOlxyl4igOrp2DwVQxBco',
 					].some((url) => text.includes(url))
 				) {
-					claimAchievement("brainDiver");
+					claimAchievement('brainDiver');
 				}
 
 				if (
@@ -1622,7 +1364,7 @@ async function post(ev?: PointerEvent) {
 					renoteTargetNote.value.userId === $i.id &&
 					text.length > 0
 				) {
-					claimAchievement("selfQuote");
+					claimAchievement('selfQuote');
 				}
 
 				const date = new Date();
@@ -1630,22 +1372,22 @@ async function post(ev?: PointerEvent) {
 				const m = date.getMinutes();
 				const s = date.getSeconds();
 				if (h >= 0 && h <= 3) {
-					claimAchievement("postedAtLateNight");
+					claimAchievement('postedAtLateNight');
 				}
 				if (m === 0 && s === 0) {
-					claimAchievement("postedAt0min0sec");
+					claimAchievement('postedAt0min0sec');
 				}
 
 				if (serverDraftId.value != null) {
-					misskeyApi("notes/drafts/delete", { draftId: serverDraftId.value });
+					misskeyApi('notes/drafts/delete', { draftId: serverDraftId.value });
 				}
 			});
 		})
 		.catch((err) => {
 			posting.value = false;
 			os.alert({
-				type: "error",
-				text: err.message + "\n" + (err as any).id,
+				type: 'error',
+				text: err.message + '\n' + (err as any).id,
 			});
 		});
 }
@@ -1659,7 +1401,7 @@ async function postAsScheduled() {
 }
 
 function cancel() {
-	emit("cancel");
+	emit('cancel');
 }
 
 function insertMention() {
@@ -1668,7 +1410,7 @@ function insertMention() {
 			if (textareaEl.value == null) return;
 			insertTextAtCursor(
 				textareaEl.value,
-				"@" + Misskey.acct.toString(user) + " ",
+				'@' + Misskey.acct.toString(user) + ' ',
 			);
 		},
 	);
@@ -1747,11 +1489,11 @@ function showActions(ev: PointerEvent) {
 						cw: cw.value,
 					},
 					(key, value) => {
-						if (typeof key !== "string" || typeof value !== "string") return;
-						if (key === "text") {
+						if (typeof key !== 'string' || typeof value !== 'string') return;
+						if (key === 'text') {
 							text.value = value;
 						}
-						if (key === "cw") {
+						if (key === 'cw') {
 							useCw.value = value !== null;
 							cw.value = value;
 						}
@@ -1770,19 +1512,19 @@ async function openAccountMenu(ev: PointerEvent) {
 
 	function showDraftsDialog(scheduled: boolean) {
 		const { dispose } = os.popup(
-			defineAsyncComponent(() => import("@/components/MkNoteDraftsDialog.vue")),
+			defineAsyncComponent(() => import('@/components/MkNoteDraftsDialog.vue')),
 			{
 				scheduled,
 			},
 			{
 				restore: async (draft: Misskey.entities.NoteDraft) => {
-					text.value = draft.text ?? "";
+					text.value = draft.text ?? '';
 					useCw.value = draft.cw != null;
 					cw.value = draft.cw ?? null;
 					visibility.value = draft.visibility;
 					localOnly.value = draft.localOnly ?? false;
 					files.value = draft.files ?? [];
-					hashtags.value = draft.hashtag ?? "";
+					hashtags.value = draft.hashtag ?? '';
 					if (draft.hashtag) withHashtags.value = true;
 					if (draft.poll) {
 						// 投票を一時的に空にしないと反映されないため
@@ -1799,7 +1541,7 @@ async function openAccountMenu(ev: PointerEvent) {
 						});
 					}
 					if (draft.visibleUserIds) {
-						misskeyApi("users/show", { userIds: draft.visibleUserIds }).then(
+						misskeyApi('users/show', { userIds: draft.visibleUserIds }).then(
 							(users) => {
 								users.forEach((u) => pushVisibleUser(u));
 							},
@@ -1816,7 +1558,7 @@ async function openAccountMenu(ev: PointerEvent) {
 					visibleUsers.value = [];
 					draft.visibleUserIds?.forEach((uid) => {
 						if (!visibleUsers.value.some((u) => u.id === uid)) {
-							misskeyApi("users/show", { userId: uid }).then((user) => {
+							misskeyApi('users/show', { userId: uid }).then((user) => {
 								pushVisibleUser(user);
 							});
 						}
@@ -1848,22 +1590,22 @@ async function openAccountMenu(ev: PointerEvent) {
 	os.popupMenu(
 		[
 			{
-				type: "button",
+				type: 'button',
 				text: i18n.ts._drafts.listDrafts,
-				icon: "ti ti-cloud-download",
+				icon: 'ti ti-cloud-download',
 				action: () => {
 					showDraftsDialog(false);
 				},
 			},
 			{
-				type: "button",
+				type: 'button',
 				text: i18n.ts._drafts.listScheduledNotes,
-				icon: "ti ti-clock-down",
+				icon: 'ti ti-clock-down',
 				action: () => {
 					showDraftsDialog(true);
 				},
 			},
-			{ type: "divider" },
+			{ type: 'divider' },
 			...items,
 		],
 		(ev.currentTarget ?? ev.target ?? undefined) as HTMLElement | undefined,
@@ -1941,7 +1683,7 @@ function showTour() {
 			description: i18n.ts._postForm._howToUse.submit_description,
 		},
 	]).then(() => {
-		closeTip("postForm");
+		closeTip('postForm');
 	});
 }
 
@@ -1961,7 +1703,7 @@ onMounted(() => {
 	nextTick(() => {
 		// 書きかけの投稿を復元
 		if (!props.instant && !props.mention && !props.specified && !props.mock) {
-			const draft = JSON.parse(miLocalStorage.getItem("drafts") ?? "{}")[
+			const draft = JSON.parse(miLocalStorage.getItem('drafts') ?? '{}')[
 				draftKey.value
 			] as StoredDrafts[string] | undefined;
 			if (draft != null) {
@@ -1975,7 +1717,7 @@ onMounted(() => {
 					poll.value = draft.data.poll;
 				}
 				if (draft.data.visibleUserIds) {
-					misskeyApi("users/show", { userIds: draft.data.visibleUserIds }).then(
+					misskeyApi('users/show', { userIds: draft.data.visibleUserIds }).then(
 						(users) => {
 							users.forEach((u) => pushVisibleUser(u));
 						},
@@ -1990,11 +1732,11 @@ onMounted(() => {
 		// 削除して編集
 		if (props.initialNote) {
 			const init = props.initialNote;
-			text.value = init.text ? init.text : "";
+			text.value = init.text ? init.text : '';
 			useCw.value = init.cw != null;
 			cw.value = init.cw ?? null;
 			visibility.value =
-				init.dontShowOnLtl === true ? "public_non_ltl" : init.visibility;
+				init.dontShowOnLtl === true ? 'public_non_ltl' : init.visibility;
 			localOnly.value = init.localOnly ?? false;
 			files.value = init.files ?? [];
 			if (init.poll) {
@@ -2008,7 +1750,7 @@ onMounted(() => {
 				};
 			}
 			if (init.visibleUserIds) {
-				misskeyApi("users/show", { userIds: init.visibleUserIds }).then(
+				misskeyApi('users/show', { userIds: init.visibleUserIds }).then(
 					(users) => {
 						users.forEach((u) => pushVisibleUser(u));
 					},
@@ -2038,7 +1780,7 @@ onBeforeUnmount(() => {
 async function canClose() {
 	if (!uploader.allItemsUploaded.value) {
 		const { canceled } = await os.confirm({
-			type: "question",
+			type: 'question',
 			text: i18n.ts._postForm.quitInspiteOfThereAreUnuploadedFilesConfirm,
 			okText: i18n.ts.yes,
 			cancelText: i18n.ts.no,
