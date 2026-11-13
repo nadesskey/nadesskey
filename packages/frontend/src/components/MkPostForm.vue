@@ -224,19 +224,9 @@ watch(showAddMfmFunction, () =>
 	prefer.commit('enableQuickAddMfmFunction', showAddMfmFunction.value),
 );
 const cw = ref<string | null>(props.initialCw ?? null);
-const localOnly = ref(
-	props.initialLocalOnly ??
-		(prefer.s.rememberNoteVisibility
-			? store.s.localOnly
-			: prefer.s.defaultNoteLocalOnly),
-);
-const visibility = ref(
-	props.initialVisibility ??
-		(prefer.s.rememberNoteVisibility
-			? store.s.visibility
-			: prefer.s.defaultNoteVisibility),
-);
-const visibleUsers = ref<Misskey.entities.UserDetailed[]>([]);
+const localOnly = ref(props.initialLocalOnly ?? (prefer.s.rememberNoteVisibility ? store.s.localOnly : prefer.s.defaultNoteLocalOnly));
+const visibility = ref(props.initialVisibility ?? (prefer.s.rememberNoteVisibility ? store.s.visibility : prefer.s.defaultNoteVisibility));
+const visibleUsers = ref<Misskey.entities.UserLite[]>([]);
 if (props.initialVisibleUsers) {
 	props.initialVisibleUsers.forEach((u) => pushVisibleUser(u));
 }
@@ -488,11 +478,7 @@ if (
 		}
 
 		if (replyTargetNote.value.userId !== $i.id) {
-			misskeyApi('users/show', { userId: replyTargetNote.value.userId }).then(
-				(user) => {
-					pushVisibleUser(user);
-				},
-			);
+			pushVisibleUser(replyTargetNote.value.user);
 		}
 	}
 }
@@ -839,12 +825,8 @@ function showOtherSettings() {
 }
 //#endregion
 
-function pushVisibleUser(user: Misskey.entities.UserDetailed) {
-	if (
-		!visibleUsers.value.some(
-			(u) => u.username === user.username && u.host === user.host,
-		)
-	) {
+function pushVisibleUser(user: Misskey.entities.UserLite) {
+	if (!visibleUsers.value.some(u => u.username === user.username && u.host === user.host)) {
 		visibleUsers.value.push(user);
 	}
 }
@@ -1511,67 +1493,52 @@ async function openAccountMenu(ev: PointerEvent) {
 	if (props.mock) return;
 
 	function showDraftsDialog(scheduled: boolean) {
-		const { dispose } = os.popup(
-			defineAsyncComponent(() => import('@/components/MkNoteDraftsDialog.vue')),
-			{
-				scheduled,
-			},
-			{
-				restore: async (draft: Misskey.entities.NoteDraft) => {
-					text.value = draft.text ?? '';
-					useCw.value = draft.cw != null;
-					cw.value = draft.cw ?? null;
-					visibility.value = draft.visibility;
-					localOnly.value = draft.localOnly ?? false;
-					files.value = draft.files ?? [];
-					hashtags.value = draft.hashtag ?? '';
-					if (draft.hashtag) withHashtags.value = true;
-					if (draft.poll) {
-						// 投票を一時的に空にしないと反映されないため
-						poll.value = null;
-						nextTick(() => {
-							poll.value = {
-								choices: draft.poll!.choices,
-								multiple: draft.poll!.multiple,
-								expiresAt: draft.poll!.expiresAt
-									? new Date(draft.poll!.expiresAt).getTime()
-									: null,
-								expiredAfter: null,
-							};
-						});
-					}
-					if (draft.visibleUserIds) {
-						misskeyApi('users/show', { userIds: draft.visibleUserIds }).then(
-							(users) => {
-								users.forEach((u) => pushVisibleUser(u));
-							},
-						);
-					}
-					quoteId.value = draft.renoteId ?? null;
-					renoteTargetNote.value = draft.renote;
-					replyTargetNote.value = draft.reply;
-					reactionAcceptance.value = draft.reactionAcceptance;
-					scheduledAt.value = draft.scheduledAt ?? null;
-					if (draft.channel) targetChannel.value =
-							draft.channel as unknown as Misskey.entities.Channel;
-
-					visibleUsers.value = [];
-					draft.visibleUserIds?.forEach((uid) => {
-						if (!visibleUsers.value.some((u) => u.id === uid)) {
-							misskeyApi('users/show', { userId: uid }).then((user) => {
-								pushVisibleUser(user);
-							});
-						}
+		const { dispose } = os.popup(defineAsyncComponent(() => import('@/components/MkNoteDraftsDialog.vue')), {
+			scheduled,
+		}, {
+			restore: async (draft: Misskey.entities.NoteDraft) => {
+				text.value = draft.text ?? '';
+				useCw.value = draft.cw != null;
+				cw.value = draft.cw ?? null;
+				visibility.value = draft.visibility;
+				localOnly.value = draft.localOnly ?? false;
+				files.value = draft.files ?? [];
+				hashtags.value = draft.hashtag ?? '';
+				if (draft.hashtag) withHashtags.value = true;
+				if (draft.poll) {
+					// 投票を一時的に空にしないと反映されないため
+					poll.value = null;
+					nextTick(() => {
+						poll.value = {
+							choices: draft.poll!.choices,
+							multiple: draft.poll!.multiple,
+							expiresAt: draft.poll!.expiresAt ? (new Date(draft.poll!.expiresAt)).getTime() : null,
+							expiredAfter: null,
+						};
 					});
+				}
+				visibleUsers.value = [];
+				if (draft.visibleUserIds != null && draft.visibleUserIds.length > 0) {
+					misskeyApi('users/show', { userIds: draft.visibleUserIds }).then(users => {
+						users.forEach(u => pushVisibleUser(u));
+					});
+				}
+				quoteId.value = draft.renoteId ?? null;
+				renoteTargetNote.value = draft.renote;
+				replyTargetNote.value = draft.reply;
+				reactionAcceptance.value = draft.reactionAcceptance;
+				scheduledAt.value = draft.scheduledAt ?? null;
+				if (draft.channel) targetChannel.value = draft.channel as unknown as Misskey.entities.Channel;
 
-					serverDraftId.value = draft.id;
-				},
-				cancel: () => {},
-				closed: () => {
-					dispose();
-				},
+				serverDraftId.value = draft.id;
 			},
-		);
+			cancel: () => {
+
+			},
+			closed: () => {
+				dispose();
+			},
+		});
 	}
 
 	const items = await getAccountMenu({
@@ -1587,29 +1554,21 @@ async function openAccountMenu(ev: PointerEvent) {
 		},
 	});
 
-	os.popupMenu(
-		[
-			{
-				type: 'button',
-				text: i18n.ts._drafts.listDrafts,
-				icon: 'ti ti-cloud-download',
-				action: () => {
-					showDraftsDialog(false);
-				},
-			},
-			{
-				type: 'button',
-				text: i18n.ts._drafts.listScheduledNotes,
-				icon: 'ti ti-clock-down',
-				action: () => {
-					showDraftsDialog(true);
-				},
-			},
-			{ type: 'divider' },
-			...items,
-		],
-		(ev.currentTarget ?? ev.target ?? undefined) as HTMLElement | undefined,
-	);
+	os.popupMenu([{
+		type: 'button',
+		text: i18n.ts._drafts.listDrafts,
+		icon: 'ti ti-cloud-download',
+		action: () => {
+			showDraftsDialog(false);
+		},
+	}, {
+		type: 'button',
+		text: i18n.ts._drafts.listScheduledNotes,
+		icon: 'ti ti-clock-down',
+		action: () => {
+			showDraftsDialog(true);
+		},
+	}, { type: 'divider' }, ...items], (ev.currentTarget ?? ev.target ?? undefined) as HTMLElement | undefined);
 }
 
 function showPerUploadItemMenu(item: UploaderItem, ev: PointerEvent) {
